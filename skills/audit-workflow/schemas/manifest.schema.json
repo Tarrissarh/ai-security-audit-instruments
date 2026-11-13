@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.invalid/ai-audit/v5.2/manifest.schema.json",
+  "$id": "https://example.invalid/ai-audit/schemas/manifest.schema.json",
   "title": "Audit workflow manifest v1",
   "type": "object",
   "additionalProperties": false,

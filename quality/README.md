@@ -10,7 +10,7 @@
 - `scripts/translation_lint.py` — сохранность технической структуры перевода; не оценивает смысл текста.
 - `examples/predictions-perfect.json`, `examples/predictions-empty.json`, `examples/predictions-false-positive.json` — **искусственные самотесты оценщика**, НЕ результаты выполнения LLM.
 - `examples/translations/` — примеры корректного и повреждённого переводов для тестов.
-- `../tests/test_quality_v53.py` — автоматические тесты инструментов оценки.
+- `../tests/test_quality.py` — автоматические тесты инструментов оценки.
 
 ## Как честно провести аудит в AI-клиенте
 
@@ -95,7 +95,7 @@ python -m unittest discover -s tests -v
 `translation_lint.py` проверяет совпадение ключей YAML frontmatter и машинных значений, огороженных кодовых блоков, параметров в inline code, плейсхолдеров, URL, целевых Markdown-ссылок и количества заголовков. Если структура переводов изменила относительный путь, разрешается явная карта `--link-map path/to/map.json`, например:
 
 ```json
-{ "references/guide.md": "../references/guide.md" }
+{"references/guide.md": "../references/guide.md"}
 ```
 
 Этот тест **не определяет** корректность русского языка, точность смысла, полноту перевода, порядок разделов и semantic drift. Для этого добавлена ручная [рубрика](../skills/audit-docs/references/quality-translation.md) и отдельная ревизия человеком.

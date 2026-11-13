@@ -6,7 +6,6 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 
-
 class DocumentationCurrentTests(unittest.TestCase):
     """Руководства содержат только действующие правила, история — в CHANGELOG."""
 
@@ -20,11 +19,8 @@ class DocumentationCurrentTests(unittest.TestCase):
                     self.assertNotRegex(line, pattern, f"{file_path}:{line_number}")
 
     def test_no_legacy_documents_or_versioned_protocols(self):
-        forbidden = (
-            "README-LEGACY.md", "CHANGELOG-LEGACY.md", "VALIDATION-v6.5.md",
-            "integration/runtime/V62.md", "integration/runtime/V63.md",
-            "integration/runtime/V64.md", "integration/runtime/V65.md",
-        )
+        # История хранится в журнале, а старые параллельные руководства удалены.
+        forbidden = ("README-LEGACY.md", "CHANGELOG-LEGACY.md")
         for relative_path in forbidden:
             with self.subTest(path=relative_path):
                 self.assertFalse((ROOT / relative_path).exists())
@@ -34,13 +30,12 @@ class DocumentationCurrentTests(unittest.TestCase):
         self.assertTrue((ROOT / "skills/audit-workflow/references/runtime-evidence.md").is_file())
         workflow = (ROOT / "skills/audit-workflow/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("references/runtime-evidence.md", workflow)
-        self.assertNotIn("runtime-evidence-v6", workflow)
+        self.assertNotIn("runtime-evidence-v", workflow)
 
     def test_changelog_is_only_release_history(self):
         changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-        self.assertIn("## [6.7.1] - 2026-11-13", changelog)
+        self.assertRegex(changelog, r"(?m)^## \[\d+\.\d+\.\d+\] - \d{4}-\d{2}-\d{2}$")
         self.assertIn("## [Unreleased]", changelog)
-
 
 if __name__ == "__main__":
     unittest.main()

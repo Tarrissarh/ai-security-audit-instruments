@@ -2,13 +2,13 @@
 
 **Последняя подтверждённая локальная проверка:** 12.11.2026. Эта матрица отражает только выполненные проверки; повторное копирование пакета не проверяет AI-клиент.
 
-| Клиент           | Локальная подготовка Skills | Реальное обнаружение | Клиентский E2E | Метрики реального аудита |
-| ---------------- | --------------------------- | -------------------- | -------------- | ------------------------ |
-| OpenCode         | PASS                        | NOT_TESTED           | NOT_TESTED     | N/A                      |
-| DeepSeek Harness | PASS                        | NOT_TESTED           | NOT_TESTED     | N/A                      |
-| Claude Code      | PASS                        | NOT_TESTED           | NOT_TESTED     | N/A                      |
-| Codex            | PASS                        | NOT_TESTED           | NOT_TESTED     | N/A                      |
-| Cursor           | PASS                        | NOT_TESTED           | NOT_TESTED     | N/A                      |
+| Клиент | Локальная подготовка Skills | Реальное обнаружение | Клиентский E2E | Метрики реального аудита |
+|---|---|---|---|---|
+| OpenCode | PASS | NOT_TESTED | NOT_TESTED | N/A |
+| DeepSeek Harness | PASS | NOT_TESTED | NOT_TESTED | N/A |
+| Claude Code | PASS | NOT_TESTED | NOT_TESTED | N/A |
+| Codex | PASS | NOT_TESTED | NOT_TESTED | N/A |
+| Cursor | PASS | NOT_TESTED | NOT_TESTED | N/A |
 
 В использованной среде сборки не было настроенных клиентских CLI и провайдеров; клиентские журналы не предоставлены. **Подтверждённых реальных клиентских запусков: 0 из 5.**
 

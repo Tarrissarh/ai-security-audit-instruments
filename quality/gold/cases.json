@@ -1,6 +1,6 @@
 {
   "benchmark_version": "1.0",
-  "suite": "audit-quality-v5.3",
+  "suite": "audit-quality",
   "cases": [
     {
       "case_id": "skill-clean",

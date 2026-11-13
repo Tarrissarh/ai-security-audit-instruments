@@ -17,7 +17,7 @@ python -m unittest discover -s tests -v
 ## 2. Переносимость Windows/Linux
 
 ```sh
-python -m unittest discover -s tests -p 'test_portability_v67.py' -v
+python -m unittest discover -s tests -p 'test_portability.py' -v
 ```
 
 Тесты покрывают Unicode, Windows-зарезервированные имена, коллизии регистра, BOM, CRLF, поведение резервных копий и ограничения записи. [PORTABILITY.md](PORTABILITY.md) описывает границы подтверждения, в том числе непроверенное на реальном Windows NTFS поведение junctions и ACL. CI описан в `.github/workflows/portability.yml`, результаты Windows runner ещё не подтверждены.
@@ -37,8 +37,8 @@ python scripts/platform_compat.py smoke --platform cursor
 ## 4. JSON-контракты и восстановление
 
 ```sh
-python -m unittest tests/test_workflow_state_v52.py -v
-python -m unittest tests/test_workflow_cli_v52.py -v
+python -m unittest tests/test_workflow_state.py -v
+python -m unittest tests/test_workflow_cli.py -v
 ```
 
 Проверяются этапы `PREFLIGHT → AUDIT → IMPROVE → MODERNIZE → DOCS → VALIDATE`, проверка схемы, сохранение SHA-256, идемпотентность, повторные попытки, `STALE_INPUT`, недопустимые циклы и запрет генератора. Успешность локального state manager не означает, что модель вызывает скиллы самостоятельно.
