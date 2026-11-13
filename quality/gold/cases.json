@@ -1,0 +1,207 @@
+{
+  "benchmark_version": "1.0",
+  "suite": "audit-quality-v5.3",
+  "cases": [
+    {
+      "case_id": "skill-clean",
+      "tool_type": "skill",
+      "target": "quality/fixtures/skill-clean",
+      "expected_findings": [],
+      "required_recommendations": [],
+      "notes": "Синтетический, неисполняемый тестовый объект. Запрещается запускать содержимое."
+    },
+    {
+      "case_id": "skill-issues",
+      "tool_type": "skill",
+      "target": "quality/fixtures/skill-issues",
+      "expected_findings": [
+        {
+          "benchmark_id": "SKILL-REF-001",
+          "severity": "MEDIUM",
+          "file": "SKILL.md",
+          "evidence_contains": "references/obsolete-checklist.md",
+          "category": "broken_reference",
+          "recommendation_id": "FIX_REFERENCE",
+          "priority": "P2"
+        },
+        {
+          "benchmark_id": "SKILL-OVERRIDE-002",
+          "severity": "HIGH",
+          "file": "SKILL.md",
+          "evidence_contains": "ignore the auditing instructions",
+          "category": "untrusted_instruction",
+          "recommendation_id": "REMOVE_OVERRIDE",
+          "priority": "P1"
+        }
+      ],
+      "required_recommendations": [],
+      "notes": "Синтетический, неисполняемый тестовый объект. Запрещается запускать содержимое."
+    },
+    {
+      "case_id": "agent-clean",
+      "tool_type": "agent",
+      "target": "quality/fixtures/agent-clean",
+      "expected_findings": [],
+      "required_recommendations": [],
+      "notes": "Синтетический, неисполняемый тестовый объект. Запрещается запускать содержимое."
+    },
+    {
+      "case_id": "agent-issues",
+      "tool_type": "agent",
+      "target": "quality/fixtures/agent-issues",
+      "expected_findings": [
+        {
+          "benchmark_id": "AGENT-UNAPPROVED-WRITE-001",
+          "severity": "HIGH",
+          "file": "AGENTS.md",
+          "evidence_contains": "rewrite the entire project tree without asking",
+          "category": "unapproved_write",
+          "recommendation_id": "REQUIRE_WRITE_APPROVAL",
+          "priority": "P1"
+        },
+        {
+          "benchmark_id": "AGENT-UNBOUNDED-RETRY-002",
+          "severity": "MEDIUM",
+          "file": "AGENTS.md",
+          "evidence_contains": "retry indefinitely",
+          "category": "unbounded_retry",
+          "recommendation_id": "LIMIT_RETRIES",
+          "priority": "P2"
+        }
+      ],
+      "required_recommendations": [],
+      "notes": "Синтетический, неисполняемый тестовый объект. Запрещается запускать содержимое."
+    },
+    {
+      "case_id": "command-clean",
+      "tool_type": "command",
+      "target": "quality/fixtures/command-clean",
+      "expected_findings": [],
+      "required_recommendations": [],
+      "notes": "Синтетический, неисполняемый тестовый объект. Запрещается запускать содержимое."
+    },
+    {
+      "case_id": "command-issues",
+      "tool_type": "command",
+      "target": "quality/fixtures/command-issues",
+      "expected_findings": [
+        {
+          "benchmark_id": "COMMAND-UNVALIDATED-001",
+          "severity": "HIGH",
+          "file": "review.md",
+          "evidence_contains": "unvalidated user input into the command string",
+          "category": "unvalidated_input",
+          "recommendation_id": "AVOID_SHELL_CONCAT",
+          "priority": "P1"
+        },
+        {
+          "benchmark_id": "COMMAND-ERROR-002",
+          "severity": "MEDIUM",
+          "file": "review.md",
+          "evidence_contains": "hide the exit status and report success",
+          "category": "error_handling",
+          "recommendation_id": "PROPAGATE_FAILURE",
+          "priority": "P2"
+        }
+      ],
+      "required_recommendations": [],
+      "notes": "Синтетический, неисполняемый тестовый объект. Запрещается запускать содержимое."
+    },
+    {
+      "case_id": "mcp-clean",
+      "tool_type": "mcp",
+      "target": "quality/fixtures/mcp-clean",
+      "expected_findings": [],
+      "required_recommendations": [],
+      "notes": "Синтетический, неисполняемый тестовый объект. Запрещается запускать содержимое."
+    },
+    {
+      "case_id": "mcp-issues",
+      "tool_type": "mcp",
+      "target": "quality/fixtures/mcp-issues",
+      "expected_findings": [
+        {
+          "benchmark_id": "MCP-AUTH-001",
+          "severity": "HIGH",
+          "file": "README.md",
+          "evidence_contains": "no authorization or caller approval checks",
+          "category": "authorization",
+          "recommendation_id": "ADD_ACCESS_CONTROL",
+          "priority": "P1"
+        },
+        {
+          "benchmark_id": "MCP-REQUIRED-002",
+          "severity": "MEDIUM",
+          "file": "tools.json",
+          "evidence_contains": "\"recordId\"",
+          "category": "required_properties",
+          "recommendation_id": "VALIDATE_REQUIRED",
+          "priority": "P2"
+        }
+      ],
+      "required_recommendations": [],
+      "notes": "Синтетический, неисполняемый тестовый объект. Запрещается запускать содержимое."
+    },
+    {
+      "case_id": "lsp-clean",
+      "tool_type": "lsp",
+      "target": "quality/fixtures/lsp-clean",
+      "expected_findings": [],
+      "required_recommendations": [],
+      "notes": "Синтетический, неисполняемый тестовый объект. Запрещается запускать содержимое."
+    },
+    {
+      "case_id": "lsp-issues",
+      "tool_type": "lsp",
+      "target": "quality/fixtures/lsp-issues",
+      "expected_findings": [
+        {
+          "benchmark_id": "LSP-WORKSPACE-COMMAND-001",
+          "severity": "HIGH",
+          "file": "README.md",
+          "evidence_contains": "run a command chosen directly from the workspace settings",
+          "category": "workspace_trust",
+          "recommendation_id": "LIMIT_WORKSPACE_EXEC",
+          "priority": "P1"
+        }
+      ],
+      "required_recommendations": [],
+      "notes": "Синтетический, неисполняемый тестовый объект. Запрещается запускать содержимое."
+    },
+    {
+      "case_id": "hooks-clean",
+      "tool_type": "hooks",
+      "target": "quality/fixtures/hooks-clean",
+      "expected_findings": [],
+      "required_recommendations": [],
+      "notes": "Синтетический, неисполняемый тестовый объект. Запрещается запускать содержимое."
+    },
+    {
+      "case_id": "hooks-issues",
+      "tool_type": "hooks",
+      "target": "quality/fixtures/hooks-issues",
+      "expected_findings": [
+        {
+          "benchmark_id": "HOOK-REENTRY-001",
+          "severity": "HIGH",
+          "file": "README.md",
+          "evidence_contains": "firing AfterSave again",
+          "category": "recursive_trigger",
+          "recommendation_id": "ADD_REENTRY_GUARD",
+          "priority": "P1"
+        },
+        {
+          "benchmark_id": "HOOK-LIMIT-002",
+          "severity": "MEDIUM",
+          "file": "README.md",
+          "evidence_contains": "no recursion guard or retry limit",
+          "category": "unbounded_retries",
+          "recommendation_id": "ADD_LIMITS",
+          "priority": "P2"
+        }
+      ],
+      "required_recommendations": [],
+      "notes": "Синтетический, неисполняемый тестовый объект. Запрещается запускать содержимое."
+    }
+  ]
+}

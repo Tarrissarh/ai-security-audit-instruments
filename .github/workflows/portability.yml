@@ -1,0 +1,57 @@
+# Проверяет собственные утилиты пакета на Linux и Windows без вызова AI-клиентов.
+name: Portability checks
+
+# Разрешает запуск на PR, изменениях исходников и вручную из интерфейса GitHub.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# CI не нужны разрешения на изменение содержимого репозитория.
+permissions:
+  contents: read
+
+jobs:
+  # На каждой ОС запускается одинаковый набор статических и интеграционных проверок пакета.
+  portability:
+    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.13"]
+
+    steps:
+      # Загружает исходники проекта в окружение CI.
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # Устанавливает указанную версию Python и добавляет её в PATH.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Устанавливает только доверенные зависимости тестов, не пакеты аудируемых инструментов.
+      - name: Install validation dependencies
+        run: python -m pip install -r requirements-validation.txt
+
+      # Проверяет спецификации, YAML Frontmatter, JSON и относительные ссылки.
+      - name: Validate the Skills bundle
+        run: python scripts/validate_skills.py .
+
+      # Выполняет все unit-тесты, включая регрессии переносимости v6.7.
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      # Проверяет локальную установку пяти платформ без вызова их CLI или моделей.
+      - name: Offline installation smoke tests
+        shell: bash
+        run: |
+          python scripts/platform_compat.py smoke --platform opencode
+          python scripts/platform_compat.py smoke --platform deepseek-harness
+          python scripts/platform_compat.py smoke --platform claude-code
+          python scripts/platform_compat.py smoke --platform codex
+          python scripts/platform_compat.py smoke --platform cursor

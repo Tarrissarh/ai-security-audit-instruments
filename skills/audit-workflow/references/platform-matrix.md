@@ -20,3 +20,7 @@
 - Codex https://learn.chatgpt.com/docs/build-skills
 - Cursor https://cursor.com/docs/skills
 - Agent Skills https://agentskills.io/specification
+
+### Пути на Windows
+
+Домашние пути `~/.claude/skills`, `~/.agents/skills` и `~/.cursor/skills` на Windows соответствуют `%USERPROFILE%\.claude\skills`, `%USERPROFILE%\.agents\skills` и `%USERPROFILE%\.cursor\skills` при настройках по умолчанию. Для DSH учитывай `DSH_HOME`; для OpenCode — активную XDG-конфигурацию. Полные примеры: корневой `WINDOWS.md` из дистрибутива (не копируется в Skills root).

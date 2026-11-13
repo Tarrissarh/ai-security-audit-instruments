@@ -1,0 +1,6 @@
+{
+  "event": "AfterSave",
+  "action": "emit informational message",
+  "mutatesSource": false,
+  "reentrant": false
+}

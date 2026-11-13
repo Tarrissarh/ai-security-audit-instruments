@@ -1,0 +1,19 @@
+{
+  "platform": "opencode",
+  "client_version": null,
+  "checked_at": null,
+  "project_scope": "isolated synthetic fixture only",
+  "case_id": "skill-clean",
+  "results": {
+    "discovery": "NOT_TESTED",
+    "activation": "NOT_TESTED",
+    "reference_loading": "NOT_TESTED",
+    "orchestration": "NOT_TESTED",
+    "reports": "NOT_TESTED",
+    "no_unauthorized_change": "NOT_TESTED",
+    "generator_consent": "NOT_TESTED",
+    "quality": "NOT_TESTED"
+  },
+  "evidence_files": [],
+  "limitations": ["Template only. Do not claim a platform has been tested until a real client run is recorded."]
+}

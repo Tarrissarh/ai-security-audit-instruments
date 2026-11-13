@@ -1,0 +1,46 @@
+{
+  "version": "6.1",
+  "results": [
+    {
+      "platform": "opencode",
+      "local_installer": "PASS",
+      "skill_count": 11,
+      "source_unchanged": true,
+      "real_client_status": "NOT_TESTED",
+      "client_pass_certified": false
+    },
+    {
+      "platform": "deepseek-harness",
+      "local_installer": "PASS",
+      "skill_count": 11,
+      "source_unchanged": true,
+      "real_client_status": "NOT_TESTED",
+      "client_pass_certified": false
+    },
+    {
+      "platform": "claude-code",
+      "local_installer": "PASS",
+      "skill_count": 11,
+      "source_unchanged": true,
+      "real_client_status": "NOT_TESTED",
+      "client_pass_certified": false
+    },
+    {
+      "platform": "codex",
+      "local_installer": "PASS",
+      "skill_count": 11,
+      "source_unchanged": true,
+      "real_client_status": "NOT_TESTED",
+      "client_pass_certified": false
+    },
+    {
+      "platform": "cursor",
+      "local_installer": "PASS",
+      "skill_count": 11,
+      "source_unchanged": true,
+      "real_client_status": "NOT_TESTED",
+      "client_pass_certified": false
+    }
+  ],
+  "note": "Offline preparation only. AI client not launched."
+}

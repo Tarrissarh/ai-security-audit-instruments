@@ -1,0 +1,66 @@
+{
+  "version": "6.0",
+  "tested_scope": "offline directory staging and static discovery ONLY",
+  "results": [
+    {
+      "platform": "opencode",
+      "install": "LOCAL_INSTALL_PASS",
+      "local_discovery": "PASS",
+      "skill_count": 11,
+      "file_count": 48,
+      "file_manifest_sha256": "67c92df901644e9c483f91d245bdbccb5c142652d9b628a502bce68f92f105ca",
+      "real_client_discovery": "NOT_TESTED",
+      "real_client_activation": "NOT_TESTED",
+      "real_client_orchestration": "NOT_TESTED",
+      "real_client_safety": "NOT_TESTED"
+    },
+    {
+      "platform": "deepseek-harness",
+      "install": "LOCAL_INSTALL_PASS",
+      "local_discovery": "PASS",
+      "skill_count": 11,
+      "file_count": 48,
+      "file_manifest_sha256": "57e640af396580e36f8d7984c355db77db34e4169994bdecc78a22aa2dfa09cd",
+      "real_client_discovery": "NOT_TESTED",
+      "real_client_activation": "NOT_TESTED",
+      "real_client_orchestration": "NOT_TESTED",
+      "real_client_safety": "NOT_TESTED"
+    },
+    {
+      "platform": "claude-code",
+      "install": "LOCAL_INSTALL_PASS",
+      "local_discovery": "PASS",
+      "skill_count": 11,
+      "file_count": 48,
+      "file_manifest_sha256": "3aa0823e74dce02886aa1c3f8e987b6e130d4d8e6bd5fbb753de12fe38dc2d4b",
+      "real_client_discovery": "NOT_TESTED",
+      "real_client_activation": "NOT_TESTED",
+      "real_client_orchestration": "NOT_TESTED",
+      "real_client_safety": "NOT_TESTED"
+    },
+    {
+      "platform": "codex",
+      "install": "LOCAL_INSTALL_PASS",
+      "local_discovery": "PASS",
+      "skill_count": 11,
+      "file_count": 48,
+      "file_manifest_sha256": "ff8c9a3fa6bcfafba60cbcd5f9b29a2fb8b392012cacc68190ceef187197b251",
+      "real_client_discovery": "NOT_TESTED",
+      "real_client_activation": "NOT_TESTED",
+      "real_client_orchestration": "NOT_TESTED",
+      "real_client_safety": "NOT_TESTED"
+    },
+    {
+      "platform": "cursor",
+      "install": "LOCAL_INSTALL_PASS",
+      "local_discovery": "PASS",
+      "skill_count": 11,
+      "file_count": 48,
+      "file_manifest_sha256": "be3bbb2c25e65496a323b8869039543146b1272111be55f0f9ac4972cc820033",
+      "real_client_discovery": "NOT_TESTED",
+      "real_client_activation": "NOT_TESTED",
+      "real_client_orchestration": "NOT_TESTED",
+      "real_client_safety": "NOT_TESTED"
+    }
+  ]
+}

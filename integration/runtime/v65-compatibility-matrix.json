@@ -1,0 +1,62 @@
+{
+  "report_schema": "v6.4.0",
+  "generated_at": "2026-11-12T18:16:28.101639+00:00",
+  "execution_mode": "READ_ONLY_OFFLINE",
+  "clients_launched_by_this_tool": 0,
+  "client_pass_certified": false,
+  "overall_status": "NOT_TESTED",
+  "client_matrix": {
+    "opencode": {
+      "cli_on_path": "NOT_CHECKED",
+      "supplied_workspaces": 0,
+      "operator_pass_claims": 0,
+      "actual_client_e2e": "NOT_TESTED",
+      "validated_client_pass": false,
+      "status": "NOT_TESTED",
+      "note": "Independent client-skill execution has not been confirmed by this offline tool."
+    },
+    "deepseek-harness": {
+      "cli_on_path": "NOT_CHECKED",
+      "supplied_workspaces": 0,
+      "operator_pass_claims": 0,
+      "actual_client_e2e": "NOT_TESTED",
+      "validated_client_pass": false,
+      "status": "NOT_TESTED",
+      "note": "Independent client-skill execution has not been confirmed by this offline tool."
+    },
+    "claude-code": {
+      "cli_on_path": "NOT_CHECKED",
+      "supplied_workspaces": 0,
+      "operator_pass_claims": 0,
+      "actual_client_e2e": "NOT_TESTED",
+      "validated_client_pass": false,
+      "status": "NOT_TESTED",
+      "note": "Independent client-skill execution has not been confirmed by this offline tool."
+    },
+    "codex": {
+      "cli_on_path": "NOT_CHECKED",
+      "supplied_workspaces": 0,
+      "operator_pass_claims": 0,
+      "actual_client_e2e": "NOT_TESTED",
+      "validated_client_pass": false,
+      "status": "NOT_TESTED",
+      "note": "Independent client-skill execution has not been confirmed by this offline tool."
+    },
+    "cursor": {
+      "cli_on_path": "NOT_CHECKED",
+      "supplied_workspaces": 0,
+      "operator_pass_claims": 0,
+      "actual_client_e2e": "NOT_TESTED",
+      "validated_client_pass": false,
+      "status": "NOT_TESTED",
+      "note": "Independent client-skill execution has not been confirmed by this offline tool."
+    }
+  },
+  "workspaces": [],
+  "limitations": [
+    "Installed CLI presence is not evidence of skill discovery or activation.",
+    "Operator-provided logs and SHA-256 hashes cannot prove independent provenance.",
+    "The tool never returns PASS for a client, even when all local integrity checks pass.",
+    "Quality metrics require authentic LLM predictions and independent review."
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "capabilities": [
+    "completion",
+    "hover"
+  ],
+  "workspaceEdit": false,
+  "execWorkspaceCommands": false
+}

@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "release": "6.2",
+  "checked_at": "2026-11-12T13:17:28+00:00",
+  "scope": "local_offline_checks_only",
+  "results": [
+    {
+      "platform": "claude-code",
+      "installed_skills": 11,
+      "isolated_fixture_prepared": true,
+      "read_only_cli_plan": "PASS",
+      "client_binary_present": false,
+      "real_client_execution": "NOT_TESTED",
+      "skill_loader": "NOT_TESTED",
+      "skill_activation": "NOT_TESTED",
+      "quality_metrics": "NOT_TESTED",
+      "local_log_check": "NOT_TESTED"
+    },
+    {
+      "platform": "codex",
+      "installed_skills": 11,
+      "isolated_fixture_prepared": true,
+      "read_only_cli_plan": "PASS",
+      "client_binary_present": false,
+      "real_client_execution": "NOT_TESTED",
+      "skill_loader": "NOT_TESTED",
+      "skill_activation": "NOT_TESTED",
+      "quality_metrics": "NOT_TESTED",
+      "local_log_check": "NOT_TESTED"
+    },
+    {
+      "platform": "cursor",
+      "installed_skills": 11,
+      "isolated_fixture_prepared": true,
+      "read_only_cli_plan": "PASS",
+      "client_binary_present": false,
+      "real_client_execution": "NOT_TESTED",
+      "skill_loader": "NOT_TESTED",
+      "skill_activation": "NOT_TESTED",
+      "quality_metrics": "NOT_TESTED",
+      "local_log_check": "NOT_TESTED"
+    },
+    {
+      "platform": "deepseek-harness",
+      "installed_skills": 11,
+      "isolated_fixture_prepared": true,
+      "read_only_cli_plan": "PASS",
+      "client_binary_present": false,
+      "real_client_execution": "NOT_TESTED",
+      "skill_loader": "NOT_TESTED",
+      "skill_activation": "NOT_TESTED",
+      "quality_metrics": "NOT_TESTED",
+      "local_log_check": "NOT_TESTED"
+    },
+    {
+      "platform": "opencode",
+      "installed_skills": 11,
+      "isolated_fixture_prepared": true,
+      "read_only_cli_plan": "PASS",
+      "client_binary_present": false,
+      "real_client_execution": "NOT_TESTED",
+      "skill_loader": "NOT_TESTED",
+      "skill_activation": "NOT_TESTED",
+      "quality_metrics": "NOT_TESTED",
+      "local_log_check": "NOT_TESTED"
+    }
+  ],
+  "actual_client_runs": 0,
+  "client_pass_certified": false,
+  "note": "No installed client binaries or configured provider credentials in the build environment; no real E2E performed."
+}

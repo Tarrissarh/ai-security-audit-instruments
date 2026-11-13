@@ -1,0 +1,64 @@
+{
+  "cases": [
+    {
+      "case_id": "skill-clean",
+      "findings": [],
+      "recommendations": []
+    },
+    {
+      "case_id": "skill-issues",
+      "findings": [],
+      "recommendations": []
+    },
+    {
+      "case_id": "agent-clean",
+      "findings": [],
+      "recommendations": []
+    },
+    {
+      "case_id": "agent-issues",
+      "findings": [],
+      "recommendations": []
+    },
+    {
+      "case_id": "command-clean",
+      "findings": [],
+      "recommendations": []
+    },
+    {
+      "case_id": "command-issues",
+      "findings": [],
+      "recommendations": []
+    },
+    {
+      "case_id": "mcp-clean",
+      "findings": [],
+      "recommendations": []
+    },
+    {
+      "case_id": "mcp-issues",
+      "findings": [],
+      "recommendations": []
+    },
+    {
+      "case_id": "lsp-clean",
+      "findings": [],
+      "recommendations": []
+    },
+    {
+      "case_id": "lsp-issues",
+      "findings": [],
+      "recommendations": []
+    },
+    {
+      "case_id": "hooks-clean",
+      "findings": [],
+      "recommendations": []
+    },
+    {
+      "case_id": "hooks-issues",
+      "findings": [],
+      "recommendations": []
+    }
+  ]
+}

@@ -1,0 +1,358 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ai-audit/v5.2/stage-result.schema.json",
+  "title": "Audit workflow stage result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "stage",
+    "status",
+    "method",
+    "evidence",
+    "output_files",
+    "invocations",
+    "data",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{32}$"
+    },
+    "stage": {
+      "enum": [
+        "PREFLIGHT",
+        "AUDIT",
+        "IMPROVE",
+        "MODERNIZE",
+        "DOCS",
+        "VALIDATE"
+      ]
+    },
+    "status": {
+      "enum": [
+        "COMPLETE",
+        "PARTIAL",
+        "SKIPPED",
+        "BLOCKED",
+        "FAILED"
+      ]
+    },
+    "method": {
+      "enum": [
+        "SKILL_CALL",
+        "READ_INSTRUCTIONS",
+        "LOCAL_ANALYSIS",
+        "NOT_RUN"
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2000
+      },
+      "maxItems": 10000
+    },
+    "output_files": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "maxItems": 10000
+    },
+    "invocations": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "caller",
+          "callee"
+        ],
+        "properties": {
+          "caller": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "callee": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      }
+    },
+    "data": {
+      "type": "object"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 2000
+      },
+      "maxItems": 1000
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "PREFLIGHT"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "host_profile"
+            ],
+            "properties": {
+              "host_profile": {
+                "type": "object",
+                "minProperties": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "AUDIT"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "checked_files",
+              "findings"
+            ],
+            "properties": {
+              "checked_files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "uniqueItems": true
+              },
+              "findings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "severity",
+                    "file",
+                    "evidence"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "file": {
+                      "type": "string"
+                    },
+                    "evidence": {
+                      "type": "string"
+                    },
+                    "severity": {
+                      "enum": [
+                        "CRITICAL",
+                        "HIGH",
+                        "MEDIUM",
+                        "LOW",
+                        "INFO"
+                      ]
+                    },
+                    "confidence": {
+                      "enum": [
+                        "VERIFIED",
+                        "DOCUMENTED",
+                        "INFERRED",
+                        "UNVERIFIED",
+                        "NOT TESTED",
+                        "NOT APPLICABLE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "IMPROVE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "proposals"
+            ],
+            "properties": {
+              "proposals": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "priority",
+                    "what",
+                    "why",
+                    "how"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "priority": {
+                      "enum": [
+                        "P0",
+                        "P1",
+                        "P2",
+                        "P3"
+                      ]
+                    },
+                    "what": {
+                      "type": "string"
+                    },
+                    "why": {
+                      "type": "string"
+                    },
+                    "how": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "MODERNIZE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "proposals"
+            ],
+            "properties": {
+              "proposals": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "verification_status",
+                    "recommendation"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "verification_status": {
+                      "enum": [
+                        "VERIFIED",
+                        "DOCUMENTED",
+                        "INFERRED",
+                        "UNVERIFIED",
+                        "NOT TESTED",
+                        "NOT APPLICABLE"
+                      ]
+                    },
+                    "recommendation": {
+                      "type": "string"
+                    },
+                    "source_url": {
+                      "type": "string"
+                    },
+                    "checked_at": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "VALIDATE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "required": [
+              "checks"
+            ],
+            "properties": {
+              "checks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "name",
+                    "status"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": [
+                        "PASSED",
+                        "FAILED",
+                        "NOT_TESTED"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

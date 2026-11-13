@@ -1,0 +1,19 @@
+{
+  "tools": [
+    {
+      "name": "update_label",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "recordId": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Modifies a stored record without authorization checks"
+    }
+  ]
+}

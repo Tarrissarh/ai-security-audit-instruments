@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "run_id": "00000000000000000000000000000000",
+  "stage": "AUDIT",
+  "status": "COMPLETE",
+  "method": "READ_INSTRUCTIONS",
+  "evidence": ["example/SKILL.md:1-9 — документация проверена"],
+  "output_files": [],
+  "invocations": [],
+  "data": {
+    "checked_files": ["example/SKILL.md"],
+    "findings": []
+  },
+  "limitations": ["Пример: вставьте фактический run_id из manifest.json"]
+}
