@@ -14,9 +14,9 @@ class TestBundle(unittest.TestCase):
     def test_generator_manual_only(self):
         f, _ = read_frontmatter(ROOT / 'skills' / 'ai-tool-generator' / 'SKILL.md')
         self.assertEqual(f.get('disable-model-invocation'), 'true')
-        self.assertIn('явн', (ROOT / 'skills' / 'ai-tool-generator' / 'SKILL.md').read_text().lower())
+        self.assertIn('явн', (ROOT / 'skills' / 'ai-tool-generator' / 'SKILL.md').read_text(encoding='utf-8').lower())
     def test_deepseek_conditional(self):
-        p = (ROOT / 'skills/audit-workflow/references/platform-deepseek-harness.md').read_text()
+        p = (ROOT / 'skills/audit-workflow/references/platform-deepseek-harness.md').read_text(encoding='utf-8')
         self.assertIn('dsh-skill-filesystem', p)
         self.assertIn('dsh-tool-skill', p)
     def test_references_present(self):
@@ -32,7 +32,7 @@ class TestBundle(unittest.TestCase):
             _, errs = read_frontmatter(p)
             self.assertTrue(errs)
     def test_workflow_no_automatic_generator(self):
-        s = (ROOT / 'skills/audit-workflow/SKILL.md').read_text().lower()
+        s = (ROOT / 'skills/audit-workflow/SKILL.md').read_text(encoding='utf-8').lower()
         self.assertIn('не вызывай', s)
         self.assertIn('ai-tool-generator', s)
 

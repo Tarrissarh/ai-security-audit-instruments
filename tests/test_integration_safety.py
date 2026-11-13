@@ -9,6 +9,7 @@ import sys
 import subprocess
 import tempfile
 import unittest
+from tests.symlink_support import symlink_or_skip
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -44,7 +45,7 @@ class TestIntegrationSafety(unittest.TestCase):
         target.mkdir()
         audit = self.root / 'subject/audit'
         audit.mkdir()
-        (audit / 'leak').symlink_to(target, target_is_directory = True)
+        symlink_or_skip(self, audit / 'leak', target, target_is_directory=True)
         with self.assertRaisesRegex(ValueError, 'symlink forbidden'):
             cli.plan(self.root)
 
@@ -52,7 +53,7 @@ class TestIntegrationSafety(unittest.TestCase):
         real_client.prepare('codex', self.root, 'skill-clean')
         outside = self.root / 'elsewhere'
         outside.mkdir()
-        (self.root / 'subject/audit').symlink_to(outside, target_is_directory = True)
+        symlink_or_skip(self, self.root / 'subject/audit', outside, target_is_directory=True)
         with self.assertRaisesRegex(ValueError, 'symlink forbidden'):
             real_client.assess(self.root)
 

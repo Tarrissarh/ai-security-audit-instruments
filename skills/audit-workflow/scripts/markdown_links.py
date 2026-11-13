@@ -71,7 +71,7 @@ def check_markdown_links(root: Path, paths: list[Path] | None = None) -> tuple[l
         if not p.is_file():
             continue
         try:
-            relative = p.relative_to(root)
+            relative = p.resolve(strict = True).relative_to(root)
         except ValueError:
             errors.append(f'{p}: Markdown source outside root')
             continue

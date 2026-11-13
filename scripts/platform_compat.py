@@ -108,6 +108,15 @@ def _reject_symlink_ancestors(root: Path, target: Path) -> None:
         if is_link_or_reparse_point(current):
             raise ValueError(f'symbolic-link path component is forbidden: {current}')
 
+def _non_directory_ancestor(root: Path, target: Path) -> Path | None:
+    """Find an existing file that prevents creation of a destination directory."""
+    current = root
+    for part in target.relative_to(root).parts:
+        current = current / part
+        if current.exists() and not current.is_dir():
+            return current
+    return None
+
 def target_root(platform: str, layout: str) -> Path:
     """Определяет поддерживаемое расположение Skills для платформы и выбранной схемы установки."""
     rel = PLATFORMS[platform][layout]
@@ -134,6 +143,9 @@ def stage(platform: str, project: Path, layout: str = 'native', apply: bool = Fa
     destination = root / target_root(platform, layout)
     _reject_symlink_ancestors(root, destination)
     issues = validate_bundle(bundle)
+    blocked_parent = _non_directory_ancestor(root, destination)
+    if blocked_parent is not None:
+        issues.append(f'destination directory blocked by file: {blocked_parent}')
     # Не объединяем одноимённые Skills из разных корней: клиент может загрузить не ту реализацию.
     scanned = _scan(root, platform)
     try:

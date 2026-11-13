@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from tests.symlink_support import symlink_or_skip
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'skills' / 'audit-workflow' / 'scripts'))
@@ -235,7 +236,7 @@ class StageStateTests(unittest.TestCase):
             self.apply('VALIDATE', data = {'checks': []})
 
     def test_symlink_source_refused(self):
-        (self.target / 'link.md').symlink_to(self.target / 'SKILL.md')
+        symlink_or_skip(self, self.target / 'link.md', self.target / 'SKILL.md')
         with self.assertRaisesRegex(WorkflowError, 'symlink'):
             resume(self.report)
 

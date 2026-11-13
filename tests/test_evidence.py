@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from tests.symlink_support import symlink_or_skip
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -114,7 +115,7 @@ class TestEvidenceReview(unittest.TestCase):
         run = self._fake_run()
         evidence = json.loads((self.workspace / '.integration-test/evidence.json').read_text())
         linked = self.workspace / '.integration-test/link.log'
-        linked.symlink_to(self.workspace / run['stdout_file'])
+        symlink_or_skip(self, linked, self.workspace / run['stdout_file'])
         evidence['checks']['discovery'].update(status = 'PASS', evidence_files = ['.integration-test/link.log'])
         (self.workspace / '.integration-test/evidence.json').write_text(json.dumps(evidence))
         result = review.create_report([self.workspace], include_probe = False)

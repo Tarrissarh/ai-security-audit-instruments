@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from tests.symlink_support import symlink_or_skip
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,7 +47,7 @@ class TestRuntimeEvidence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             p = Path(d)
             link = p / 'link'
-            link.symlink_to(p, target_is_directory = True)
+            symlink_or_skip(self, link, p, target_is_directory=True)
             with self.assertRaisesRegex(ValueError, 'regular'):
                 real.prepare('opencode', link, 'skill-clean')
 
@@ -103,7 +104,7 @@ class TestRuntimeEvidence(unittest.TestCase):
             real.prepare('codex', p, 'skill-clean')
             z = Path(outside) / 'log.txt'
             z.write_text('outside')
-            (p / '.integration-test/link.log').symlink_to(z)
+            symlink_or_skip(self, p / '.integration-test/link.log', z)
             f = p / '.integration-test/evidence.json'
             data = json.loads(f.read_text())
             data['checks']['discovery'].update(status = 'PASS', evidence_files = ['.integration-test/link.log'])
@@ -163,7 +164,7 @@ class TestReportIsolation(unittest.TestCase):
             real.prepare('codex', p, 'skill-clean')
             manifest = p / '.integration-test/baseline.json'
             manifest.unlink()
-            manifest.symlink_to(Path(outside) / 'file.json')
+            symlink_or_skip(self, manifest, Path(outside) / 'file.json')
             with self.assertRaisesRegex(ValueError, 'symbolic link'):
                 real.assess(p)
 
@@ -173,7 +174,7 @@ class TestReportSymlinks(unittest.TestCase):
             p = Path(d)
             real.prepare('codex', p, 'skill-clean')
             (Path(outside) / 'README.md').write_text('# Wrong report')
-            (p / 'audit').symlink_to(outside, target_is_directory = True)
+            symlink_or_skip(self, p / 'audit', outside, target_is_directory=True)
             (p / '.integration-test/log.txt').write_text('placeholder')
             f = p / '.integration-test/evidence.json'
             data = json.loads(f.read_text())

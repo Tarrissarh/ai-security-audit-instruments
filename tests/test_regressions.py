@@ -67,6 +67,17 @@ class TestMarkdownLinks(unittest.TestCase):
         errors, _ = self.verify({'README.md': '![image](missing.png)\n\n[details][docs]\n\n[docs]: missing.md\n'})
         self.assertEqual(len(errors), 2)
 
+    def test_noncanonical_root_with_explicit_paths(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'README.md'
+            source.write_text('# Report\n', encoding='utf-8')
+            (root / 'child').mkdir()
+            noncanonical_root = root / 'child' / '..'
+            errors, warnings = check_markdown_links(noncanonical_root, [source])
+            self.assertEqual(errors, [])
+            self.assertEqual(warnings, [])
+
     def test_ignore_fences_inline_code(self):
         errors, _ = self.verify({'README.md': '```md\n[broken](missing.md)\n```\n\n`[ignored](missing.md)`\n'})
         self.assertEqual(errors, [])

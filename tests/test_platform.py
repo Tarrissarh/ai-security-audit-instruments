@@ -4,6 +4,7 @@ import importlib.util
 import json
 import tempfile
 import unittest
+from tests.symlink_support import symlink_or_skip
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('platform_compat', ROOT / 'scripts/platform_compat.py')
@@ -39,6 +40,18 @@ class TestPlatformCompatibility(unittest.TestCase):
             self.assertEqual(result['status'], 'READY')
             self.assertFalse((p / '.agents').exists())
 
+    def test_file_in_destination_path_blocks_plan_and_apply(self):
+        with tempfile.TemporaryDirectory() as d:
+            project = Path(d)
+            blocker = project / '.agents'
+            blocker.write_text('keep this file', encoding='utf-8')
+            for apply in (False, True):
+                with self.subTest(apply=apply):
+                    result = platform_compat.stage('codex', project, apply=apply)
+                    self.assertEqual(result['status'], 'BLOCKED')
+                    self.assertTrue(any('blocked by file' in error for error in result['errors']))
+                    self.assertEqual(blocker.read_text(encoding='utf-8'), 'keep this file')
+
     def test_staging_refuses_existing_and_no_overwrite(self):
         with tempfile.TemporaryDirectory() as d:
             p = Path(d)
@@ -66,7 +79,7 @@ class TestPlatformCompatibility(unittest.TestCase):
     def test_refuse_symlink_target(self):
         with tempfile.TemporaryDirectory() as d, tempfile.TemporaryDirectory() as outside:
             p = Path(d)
-            (p / '.agents').symlink_to(outside, target_is_directory = True)
+            symlink_or_skip(self, p / '.agents', outside, target_is_directory=True)
             with self.assertRaises(ValueError):
                 platform_compat.stage('codex', p, apply = True)
             self.assertEqual(list(Path(outside).iterdir()), [])

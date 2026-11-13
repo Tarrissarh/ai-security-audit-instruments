@@ -9,6 +9,7 @@ from unittest.mock import patch
 import tempfile
 import subprocess
 import unittest
+from tests.symlink_support import symlink_or_skip
 
 ROOT = Path(__file__).resolve().parents[1]
 modpath = ROOT / 'integration/runtime/cli_e2e.py'
@@ -148,7 +149,7 @@ class TestExplicitClientRunner(unittest.TestCase):
         self.prepare()
         other = self.path / 'other'
         other.write_text('outside')
-        (self.path / 'subject/unsafe-link').symlink_to(other)
+        symlink_or_skip(self, self.path / 'subject/unsafe-link', other)
         with self.assertRaises(ValueError):
             cli.plan(self.path)
 
