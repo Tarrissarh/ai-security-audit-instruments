@@ -34,7 +34,7 @@
 ### 1.1 CLI
 
 ```
-python workflow_state.py init      --target <path> --type <auto|skill|agent|command|mcp|lsp|hooks> --report-dir <path>
+python workflow_state.py init      --target <path> --type <auto|skill|agent|command|mcp|lsp|hooks|rules> --report-dir <path>
 python workflow_state.py record    --report-dir <path> --payload <path/to/stage.json>
 python workflow_state.py resume    --report-dir <path>
 python workflow_state.py finalize  --report-dir <path>

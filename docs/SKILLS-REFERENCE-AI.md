@@ -439,7 +439,7 @@ XDG-конфигурацию. Модель DeepSeek в OpenCode **не равн�
 
 ---
 
-## 12. JSON-контракты (сводка)
+## 11. JSON-контракты (сводка)
 
 Полные схемы и их разбор — в [SKILLS-REFERENCE-AI-SCRIPTS.md](SKILLS-REFERENCE-AI-SCRIPTS.md).
 Ключевые поля:
