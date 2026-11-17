@@ -1,4 +1,0 @@
-# Dependencies ONLY for local validation/testing, not for running AI Skills.
-PyYAML>=6.0,<7
-markdown-it-py>=3.0,<5
-jsonschema>=4.20,<5

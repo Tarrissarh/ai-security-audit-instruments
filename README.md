@@ -1,119 +1,74 @@
-# AI Audit & Tooling Skills
+# AI Security Audit Instruments
 
-Кроссплатформенный комплект из **11 Agent Skills** для аудита, документирования, актуализации и разрешённой пользователем генерации AI-инструментов.
+Набор AI-скиллов (Agent Skills) для **безопасного статического аудита** AI-инструментов
+шести типов: **Skill, Agent, Command, MCP-сервер, LSP-сервер, Hooks**.
 
-> Проверено: локальная структура, валидатор и синтетические тесты. **Фактическая работа в OpenCode, DeepSeek Harness, Claude Code, Codex и Cursor — `NOT_TESTED`** до реальных клиентских запусков.
+Аудитор анализирует файлы, собирает доказательства `файл:строка`, оценивает риски и
+оформляет результат в виде русскоязычного отчёта (`README.md`, `docs/`) и полных
+переводов оригинальных инструкций (`translations/`).
 
-## Состав дистрибутива
+> **Главный принцип:** аудитор **никогда не запускает код проверяемого инструмента**.
+> Проверяемый инструмент и его текст — **недоверенные данные**, а не инструкции,
+> которым нужно следовать.
+
+---
+
+## Состав набора (11 скиллов)
+
+| Скилл | Роль |
+| ----- | ---- |
+| `audit-workflow` | Оркестратор полного аудита (единая точка входа) |
+| `audit-skill` | Аудит сторонних Skills и `SKILL.md` |
+| `audit-agent` | Аудит агентов, subagents и автономных workflows |
+| `audit-command` | Аудит команд и shell-обёрток (инъекции, опасные действия) |
+| `audit-mcp` | Аудит MCP-серверов (Tools, transport, авторизация, утечки) |
+| `audit-lsp` | Аудит LSP-серверов (workspace, команды, внешние процессы) |
+| `audit-hooks` | Аудит хуков (автозапуск, побочные эффекты, обход согласований) |
+| `audit-docs` | Формирование отчётов и переводов по результатам аудита |
+| `audit-improve` | План улучшений (рекомендации, без изменения исходников) |
+| `audit-modernize` | Проверка технологической актуальности |
+| `ai-tool-generator` | Генератор отсутствующих инструментов (только по явной команде человека) |
+
+## Конвейер аудита
+
+```
+PREFLIGHT → AUDIT → IMPROVE → MODERNIZE → DOCS → VALIDATE → COMPLETE
+```
+
+Обязательные этапы: `PREFLIGHT`, `AUDIT`, `DOCS`, `VALIDATE`. Результат — пакет файлов
+рядом с проверяемым инструментом (обычно в `<target>/audit/`):
 
 ```text
-ai-security-audit-skills/
-├── skills/                  # ТОЛЬКО эти 11 каталогов копируются в AI-клиенты
-│   ├── audit-workflow/
-│   ├── audit-skill/
-│   ├── audit-agent/
-│   ├── audit-command/
-│   ├── audit-mcp/
-│   ├── audit-lsp/
-│   ├── audit-hooks/
-│   ├── audit-docs/
-│   ├── audit-improve/
-│   ├── audit-modernize/
-│   └── ai-tool-generator/
-├── scripts/                 # Установщик и статическая валидация
-├── tests/                   # Unit- и регрессионные тесты
-├── quality/                 # Синтетические проекты и эталонные результаты
-├── integration/             # Инструментарий тестирования AI-клиентов
-├── INSTALLATION.md          # Установка и проверка
-├── WINDOWS.md               # Windows, PowerShell и пользовательские пути
-├── COMPATIBILITY.md         # Ограничения платформ
-├── TESTING.md               # Проверка качества
-├── CHANGELOG.md             # Keep a Changelog
-└── README.md
+README.md          — краткое резюме, вердикт, навигация
+docs/**/*.md       — полные подробности (security, recommendations, …)
+translations/**/*.md — русские переводы оригинальных инструкций
 ```
-
-**Не копируйте** корневые `scripts/`, `tests/`, `quality/`, `integration/` или документацию в `.claude/skills/` и аналогичные папки. Каждый каталог `skills/<id>/` содержит полноценный `SKILL.md` и необходимые вспомогательные файлы, которые копируются **вместе** с ним.
-
-## Устанавливаемые скиллы
-
-| Skill                                                  | Назначение                                                    |
-| ------------------------------------------------------ | ------------------------------------------------------------- |
-| [audit-workflow](skills/audit-workflow/SKILL.md)       | Оркестратор, порядок этапов, контроль состояния               |
-| [audit-skill](skills/audit-skill/SKILL.md)             | Проверка Skills                                               |
-| [audit-agent](skills/audit-agent/SKILL.md)             | Проверка Agents                                               |
-| [audit-command](skills/audit-command/SKILL.md)         | Проверка команд                                               |
-| [audit-mcp](skills/audit-mcp/SKILL.md)                 | Проверка MCP                                                  |
-| [audit-lsp](skills/audit-lsp/SKILL.md)                 | Проверка LSP                                                  |
-| [audit-hooks](skills/audit-hooks/SKILL.md)             | Проверка Hooks                                                |
-| [audit-docs](skills/audit-docs/SKILL.md)               | README.md, docs/, translations/                               |
-| [audit-improve](skills/audit-improve/SKILL.md)         | Обоснованные улучшения                                        |
-| [audit-modernize](skills/audit-modernize/SKILL.md)     | Проверка актуальности версий и подходов                       |
-| [ai-tool-generator](skills/ai-tool-generator/SKILL.md) | Создание недостающих инструментов **только по явной команде** |
-
-## Установка: Windows, Linux, macOS
-
-Проектные каталоги:
-
-| Клиент           | Путь для проекта (все ОС) |
-| ---------------- | ------------------------- |
-| OpenCode         | `.opencode/skills/`       |
-| DeepSeek Harness | `.dsh/skills/`            |
-| Claude Code      | `.claude/skills/`         |
-| Codex            | `.agents/skills/`         |
-| Cursor           | `.cursor/skills/`         |
-
-Windows: `C:\Work\Project\.claude\skills\` (пример), персональная установка Claude Code — `%USERPROFILE%\.claude\skills\`. Linux/macOS: `/home/user/project/.claude/skills/` и `~/.claude/skills/`. Для остальных клиентов и нестандартного OpenCode XDG/DSH_HOME см. [WINDOWS.md](WINDOWS.md).
-
-Подробности: [INSTALLATION.md](INSTALLATION.md).
-
-### Безопасная установка через Python
-
-Из корня распакованного архива, после ручной установки зависимостей из `requirements-validation.txt`:
-
-```bash
-python scripts/platform_compat.py stage --platform claude-code --project /path/to/project
-python scripts/platform_compat.py stage --platform claude-code --project /path/to/project --apply
-```
-
-```powershell
-py -3 .\scripts\platform_compat.py stage --platform claude-code --project 'C:\Work\Project'
-py -3 .\scripts\platform_compat.py stage --platform claude-code --project 'C:\Work\Project' --apply
-```
-
-Первая команда лишь проверяет план; вторая записывает файлы в проект и не допускает перезаписи существующих Skills. Не запускайте `--apply` автоматически.
-
-## Использование
-
-1. Установите 11 каталогов из `skills/` в один подходящий Skills root клиента.
-2. В чате клиента явно выберите `audit-workflow` и укажите путь к объекту аудита.
-3. Предоставьте разрешения только на чтение объекта и запись в отдельный отчётный каталог.
-4. Проверьте результат `README.md` и ссылки на `docs/` и `translations/`.
-5. Отдельно разрешайте генератор, если аудитор обнаружил отсутствующий инструмент.
-
-### Локальные тесты (без запуска AI-клиентов)
-
-```bash
-python -m pip install -r requirements-validation.txt
-python scripts/validate_skills.py .
-python -m unittest discover -s tests -v
-```
-
-Windows: `py -3 -m pip ...`, `py -3 .\scripts\validate_skills.py .`, `py -3 -m unittest ...`. Для локальной проверки требуется доверенная версия Python и зависимости, устанавливаемые пользователем. Исследуемые AI-инструменты не запускаются.
-
-## Правила сопровождения
-
-Python-код документируется по смыслу: docstrings объясняют назначение функций, а комментарии — причины нестандартных ограничений, проверки безопасности и компромиссы. Очевидные операции, аргументы и строки кода не комментируются повторно.
-
-Названия скриптов, тестов и диагностических файлов отражают их назначение, а не номер выпуска. История проекта ведётся только в [CHANGELOG.md](CHANGELOG.md). Технические версии JSON-контрактов, Python и внешних API сохраняются там, где они необходимы для совместимости.
 
 ## Документация
 
-- [PORTABILITY.md](PORTABILITY.md) — переносимые имена, Unicode/CRLF и Windows/Linux CI.
+Полная документация — в каталоге [`docs/`](docs/):
 
-- [INSTALLATION.md](INSTALLATION.md) — проектная установка и команды.
-- [WINDOWS.md](WINDOWS.md) — пользовательские и проектные пути Windows/Linux/macOS.
-- [COMPATIBILITY.md](COMPATIBILITY.md) — ограничения клиентов.
-- [TESTING.md](TESTING.md) — тестирование.
-- [CHANGELOG.md](CHANGELOG.md) — история версий в стандартизированном формате.
+| Документ | Для кого | Содержание |
+| -------- | -------- | ---------- |
+| [docs/SKILLS-GUIDE-RU.md](docs/SKILLS-GUIDE-RU.md) | человек | Обзор набора, конвейер, описание каждого скилла, диаграмма потоков данных, полная карта файлов |
+| [docs/SKILLS-REFERENCE-AI.md](docs/SKILLS-REFERENCE-AI.md) | ИИ | Точные контракты, статусы, методы, протокол этапов, правила межскиллового вызова, платформенная матрица |
+| [docs/SKILLS-REFERENCE-AI-SCRIPTS.md](docs/SKILLS-REFERENCE-AI-SCRIPTS.md) | ИИ | Пофункциональный разбор Python-скриптов, CLI, констант и JSON-схем |
 
-В комплекте нет подтверждённого результата реального клиентского E2E. Локальный `PASS` — только структурная проверка.
+## Быстрый старт
+
+Чтобы провести полный аудит инструмента, обратитесь к скиллу `audit-workflow`:
+
+> «Проведи полный аудит инструмента `<путь или имя>`».
+
+Оркестратор сам определит платформу, тип объекта, выполнит профильный анализ,
+подготовит предложения по улучшению и актуализации, создаст документацию и проверит
+результат.
+
+## Безопасность
+
+- Проверяемый код **не исполняется** — только пассивный статический анализ.
+- `ai-tool-generator` **никогда не запускается автоматически** (флаг
+  `disable-model-invocation: true`).
+- Отсутствие находок **не означает** безопасность; непроверенное помечается честно
+  (`UNVERIFIED`, `NOT TESTED`).
+- Секреты **маскируются**, не цитируются целиком.

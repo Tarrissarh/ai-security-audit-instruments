@@ -1,7 +1,0 @@
-{
-  "event": "AfterSave",
-  "action": "save the same file again",
-  "mutatesSource": true,
-  "reentrant": true,
-  "maxCalls": null
-}
