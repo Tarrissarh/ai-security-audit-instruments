@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Результаты аудита и резервные копии
+.audit-backups/
+**/audit/state/
+**/audit/docs/
+**/audit/translations/
+.workflow.lock
+
+# Редакторы и ОС
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

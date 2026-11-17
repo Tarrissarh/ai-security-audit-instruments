@@ -6,6 +6,7 @@
 > скиллы, но сам по себе ничего не запускает.
 >
 > Сопутствующие документы:
+>
 > - [SKILLS-GUIDE-RU.md](SKILLS-GUIDE-RU.md) — гайд для человека.
 > - [SKILLS-REFERENCE-AI-SCRIPTS.md](SKILLS-REFERENCE-AI-SCRIPTS.md) — Python-скрипты и JSON-схемы.
 
@@ -13,23 +14,24 @@
 
 ## 1. Инвентарь скиллов
 
-| `name` (frontmatter) | Роль | Тип объекта | Вызывается автоматически? |
-| -------------------- | ---- | ----------- | ------------------------- |
-| `audit-workflow` | Оркестратор полного аудита | любой | по просьбе «полный аудит» |
-| `audit-skill` | Профильный аудитор | `skill` | да, по типу объекта |
-| `audit-agent` | Профильный аудитор | `agent` | да, по типу объекта |
-| `audit-command` | Профильный аудитор | `command` | да, по типу объекта |
-| `audit-mcp` | Профильный аудитор | `mcp` | да, по типу объекта |
-| `audit-lsp` | Профильный аудитор | `lsp` | да, по типу объекта |
-| `audit-hooks` | Профильный аудитор | `hooks` | да, по типу объекта |
-| `audit-docs` | Документация и переводы | (результат) | да, после аудита |
-| `audit-improve` | План улучшений | (результат) | да, после аудита (режим рекомендаций) |
-| `audit-modernize` | Проверка актуальности | (результат) | да, после аудита (только REVIEW) |
-| `ai-tool-generator` | Генератор инструментов | отсутствующий tool | **НЕТ** (`disable-model-invocation: true`) |
+| `name` (frontmatter) | Роль                       | Тип объекта        | Вызывается автоматически?                  |
+| -------------------- | -------------------------- | ------------------ | ------------------------------------------ |
+| `audit-workflow`     | Оркестратор полного аудита | любой              | по просьбе «полный аудит»                  |
+| `audit-skill`        | Профильный аудитор         | `skill`            | да, по типу объекта                        |
+| `audit-agent`        | Профильный аудитор         | `agent`            | да, по типу объекта                        |
+| `audit-command`      | Профильный аудитор         | `command`          | да, по типу объекта                        |
+| `audit-mcp`          | Профильный аудитор         | `mcp`              | да, по типу объекта                        |
+| `audit-lsp`          | Профильный аудитор         | `lsp`              | да, по типу объекта                        |
+| `audit-hooks`        | Профильный аудитор         | `hooks`            | да, по типу объекта                        |
+| `audit-rules`        | Профильный аудитор         | `rules`            | да, по типу объекта                        |
+| `audit-docs`         | Документация и переводы    | (результат)        | да, после аудита                           |
+| `audit-improve`      | План улучшений             | (результат)        | да, после аудита (режим рекомендаций)      |
+| `audit-modernize`    | Проверка актуальности      | (результат)        | да, после аудита (только REVIEW)           |
+| `ai-tool-generator`  | Генератор инструментов     | отсутствующий tool | **НЕТ** (`disable-model-invocation: true`) |
 
 ### Фронтматтер
 
-- Все скиллы имеют YAML frontmatter с полями `name` и `description`.
+- Все скиллы имеют YAML frontmatter с полями `name`, `version` и `description`.
 - `ai-tool-generator` дополнительно имеет `disable-model-invocation: true` — это
   guard для клиентов, которые его понимают, но **не заменяет** отдельную проверку
   явного поручения человека.
@@ -57,15 +59,15 @@
 
 ### 3.1 Входы
 
-| Поле | Допустимые значения |
-| ---- | ------------------- |
-| `TARGET_PATH` | файл или каталог (точный путь) |
-| `TARGET_TYPE` | `auto \| skill \| agent \| command \| mcp \| lsp \| hooks` |
-| `TARGET_PLATFORM` | `auto \| opencode \| deepseek-harness \| claude-code \| codex \| cursor \| other` |
-| `OUTPUT_DIR` | необязателен |
-| `INCLUDE_IMPROVE` | `true` (по умолчанию) |
-| `INCLUDE_MODERNIZE` | `true` (по умолчанию) |
-| `GENERATE_MISSING` | **всегда `false`** в этом workflow |
+| Поле                | Допустимые значения                                                               |
+| ------------------- | --------------------------------------------------------------------------------- |
+| `TARGET_PATH`       | файл или каталог (точный путь)                                                    |
+| `TARGET_TYPE`       | `auto \| skill \| agent \| command \| mcp \| lsp \| hooks \| rules`               |
+| `TARGET_PLATFORM`   | `auto \| opencode \| deepseek-harness \| claude-code \| codex \| cursor \| other` |
+| `OUTPUT_DIR`        | необязателен                                                                      |
+| `INCLUDE_IMPROVE`   | `true` (по умолчанию)                                                             |
+| `INCLUDE_MODERNIZE` | `true` (по умолчанию)                                                             |
+| `GENERATE_MISSING`  | **всегда `false`** в этом workflow                                                |
 
 ### 3.2 Протокол этапов
 
@@ -85,14 +87,32 @@ stateDiagram-v2
     VALIDATE --> COMPLETE
     COMPLETE --> [*]
 
-    state PREFLIGHT { [*] --> PENDING --> COMPLETE }
-    state AUDIT { [*] --> PENDING --> COMPLETE }
-    state IMPROVE { [*] --> PENDING --> COMPLETE }
-    state IMPROVE { [*] --> PENDING --> SKIPPED }
-    state MODERNIZE { [*] --> PENDING --> COMPLETE }
-    state MODERNIZE { [*] --> PENDING --> SKIPPED }
-    state DOCS { [*] --> PENDING --> COMPLETE }
-    state VALIDATE { [*] --> PENDING --> COMPLETE }
+    state PREFLIGHT {
+        [*] --> PENDING
+        PENDING --> COMPLETE
+    }
+    state AUDIT {
+        [*] --> PENDING
+        PENDING --> COMPLETE
+    }
+    state IMPROVE {
+        [*] --> PENDING
+        PENDING --> COMPLETE
+        PENDING --> SKIPPED
+    }
+    state MODERNIZE {
+        [*] --> PENDING
+        PENDING --> COMPLETE
+        PENDING --> SKIPPED
+    }
+    state DOCS {
+        [*] --> PENDING
+        PENDING --> COMPLETE
+    }
+    state VALIDATE {
+        [*] --> PENDING
+        PENDING --> COMPLETE
+    }
 ```
 
 > Каждый этап проходит цикл `PENDING → (COMPLETE|PARTIAL|SKIPPED|BLOCKED|FAILED)`;
@@ -109,12 +129,12 @@ stateDiagram-v2
 
 ### 3.4 Методы этапа
 
-| Метод | Смысл |
-| ----- | ----- |
-| `SKILL_CALL` | реальный вызов скилла подтверждён API; `invocations` обязательны |
+| Метод               | Смысл                                                                      |
+| ------------------- | -------------------------------------------------------------------------- |
+| `SKILL_CALL`        | реальный вызов скилла подтверждён API; `invocations` обязательны           |
 | `READ_INSTRUCTIONS` | прочитан и применён `SKILL.md` без программного вызова; `invocations` пуст |
-| `LOCAL_ANALYSIS` | собственная проверка без вызова скилла |
-| `NOT_RUN` | этап не выполнялся |
+| `LOCAL_ANALYSIS`    | собственная проверка без вызова скилла                                     |
+| `NOT_RUN`           | этап не выполнялся                                                         |
 
 Правила: `SKILL_CALL` с пустым `invocations` — ошибка; не-`SKILL_CALL` с непустым
 `invocations` — ошибка. `SKIPPED` ⇒ только `NOT_RUN`. `COMPLETE` ⇒ не `NOT_RUN`.
@@ -162,9 +182,9 @@ stateDiagram-v2
 
 ---
 
-## 4. Профильные аудиторы: общий контракт (6 скиллов)
+## 4. Профильные аудиторы: общий контракт (7 скиллов)
 
-Шесть скиллов (`audit-skill/agent/command/mcp/lsp/hooks`) имеют идентичную структуру
+Семь скиллов (`audit-skill/agent/command/mcp/lsp/hooks/rules`) имеют идентичную структуру
 документа. Различаются только: `description`, список «Профильных проверок» и
 «Особое требование».
 
@@ -181,8 +201,8 @@ stateDiagram-v2
       минимальные разрешения;
    5. при доступе к официальной документации проверить версии/протоколы/API;
    6. подготовить результат + исходные тексты для перевода + рекомендации P0–P3;
-   6а. пассивная инвентаризация упомянутых зависимых AI-инструментов (реестр
-       `файл:строка`, обязательность, статус доступности);
+      6а. пассивная инвентаризация упомянутых зависимых AI-инструментов (реестр
+      `файл:строка`, обязательность, статус доступности);
    7. (при прямом запуске) однократно `audit-improve` + `audit-modernize`;
    8. (при прямом запуске) организовать `audit-docs`;
    9. при отсутствии объекта — не имитировать аудит.
@@ -202,8 +222,6 @@ stateDiagram-v2
 8. **JSON-контракт при запуске через audit-workflow** — передать результат оркестратору
    по `handoff-contract.md`; не редактировать `state/manifest.json`; не придумывать
    `run_id`/SHA-256; метод указывать честно.
-9. **Независимое тестирование качества** — при явном регрессионном запросе аудировать
-   только изолированный fixture из `quality/fixtures/`, не открывать `quality/gold/`.
 
 ### 4.2 Статусы подтверждения находки
 
@@ -213,14 +231,15 @@ stateDiagram-v2
 
 ### 4.3 Специфичные профильные проверки
 
-| Скилл | Число проверок | Особое требование (итоговая структура) |
-| ----- | -------------- | --------------------------------------- |
-| `audit-skill` | 9 | разделить текстовые инструкции и исполняемые компоненты |
-| `audit-agent` | 10 | **матрица действий**: операция/инструмент/право/авто-или-подтверждение/риск/защита |
-| `audit-command` | 9 | точный путь «входной аргумент → действие» для каждой опасной команды |
-| `audit-mcp` | 10 | **матрица MCP-инструментов**: tool/входы/внешний ресурс/чтение-изменение/auth/риск |
-| `audit-lsp` | 10 | разделить действия сервера и действия IDE по предложению сервера |
-| `audit-hooks` | 10 | **карта автозапуска**: событие/matcher/действие/данные/побочные эффекты/блокируемость/риск |
+| Скилл           | Число проверок | Особое требование (итоговая структура)                                                          |
+| --------------- | -------------- | ----------------------------------------------------------------------------------------------- |
+| `audit-skill`   | 9              | разделить текстовые инструкции и исполняемые компоненты                                         |
+| `audit-agent`   | 10             | **матрица действий**: операция/инструмент/право/авто-или-подтверждение/риск/защита              |
+| `audit-command` | 9              | точный путь «входной аргумент → действие» для каждой опасной команды                            |
+| `audit-mcp`     | 10             | **матрица MCP-инструментов**: tool/входы/внешний ресурс/чтение-изменение/auth/риск              |
+| `audit-lsp`     | 10             | разделить действия сервера и действия IDE по предложению сервера                                |
+| `audit-hooks`   | 10             | **карта автозапуска**: событие/matcher/действие/данные/побочные эффекты/блокируемость/риск      |
+| `audit-rules`   | 10             | **карта правил**: правило/триггер (always/glob/manual)/область/эффект на агента/риск/отключение |
 
 ### 4.4 Точные списки профильных проверок
 
@@ -249,6 +268,11 @@ stateDiagram-v2
 **audit-hooks:** (1) инвентаризация событий; (2) автоматический запуск; (3) контракт
 входа/выхода; (4) инъекции; (5) полномочия; (6) побочные эффекты; (7) обход
 согласований; (8) надёжность; (9) конфиденциальность; (10) совместимость.
+
+**audit-rules:** (1) идентичность и метаданные; (2) точки загрузки; (3) область действия
+и перекрытие правил; (4) Prompt Injection и переопределение инструкций; (5) опасные
+автоинструкции; (6) полномочия и побочные эффекты; (7) конфликты и приоритет;
+(8) переносимость; (9) корректность; (10) безопасный способ использования.
 
 ---
 
@@ -362,7 +386,7 @@ CLI-команды, пути, URL, технические идентификат
 - **Активация:** только по явной команде человека («Используй `ai-tool-generator`,
   создай …»). Упоминание в `SKILL.md`/README/логе/issue ≠ согласие.
 - **Режимы:** `PROPOSE` (по умолчанию) / `GENERATE` / `REVISE`.
-- **Вход:** `TARGET_TOOL_NAME`, `TARGET_TYPE` (`skill|agent|command|mcp|lsp|hooks|auto`),
+- **Вход:** `TARGET_TOOL_NAME`, `TARGET_TYPE` (`skill|agent|command|mcp|lsp|hooks|rules|auto`),
   `TARGET_PLATFORM`, `GENERATION_MODE`, `OUTPUT_DIR`, `REQUIREMENTS`,
   `MISSING_TOOL_RECORD` (необязательно), `CONSTRAINTS`.
 - **Обязательный контроль перед генерацией (7 шагов):** найти точное упоминание
@@ -401,31 +425,17 @@ CLI-команды, пути, URL, технические идентификат
 
 ## 10. Платформенная матрица (сводка)
 
-| Хост | Проектный корень Skills | Общий `.agents/skills` | Ключевое отличие |
-| ---- | ----------------------- | ---------------------- | ---------------- |
-| OpenCode | `.opencode/skills/` | да | `skill` tool + модель разрешений; ID зависит от пути |
-| DeepSeek Harness | `.dsh/skills/` | да (при `dsh-skill-filesystem`) | нужны mounted provider + `dsh-tool-skill` |
-| Claude Code | `.claude/skills/` | не полагаться | нативный `/skill-name`, доп. поля frontmatter |
-| Codex | `.agents/skills/` | да | нет гарантированного межскиллового API |
-| Cursor | `.cursor/skills/` | да | читает также `.claude/skills`/`.codex/skills`; cloud требует синхронизации |
+| Хост             | Проектный корень Skills | Общий `.agents/skills`          | Ключевое отличие                                                           |
+| ---------------- | ----------------------- | ------------------------------- | -------------------------------------------------------------------------- |
+| OpenCode         | `.opencode/skills/`     | да                              | `skill` tool + модель разрешений; ID зависит от пути                       |
+| DeepSeek Harness | `.dsh/skills/`          | да (при `dsh-skill-filesystem`) | нужны mounted provider + `dsh-tool-skill`                                  |
+| Claude Code      | `.claude/skills/`       | не полагаться                   | нативный `/skill-name`, доп. поля frontmatter                              |
+| Codex            | `.agents/skills/`       | да                              | нет гарантированного межскиллового API                                     |
+| Cursor           | `.cursor/skills/`       | да                              | читает также `.claude/skills`/`.codex/skills`; cloud требует синхронизации |
 
 Windows-пути: `%USERPROFILE%\.claude\skills`, `%USERPROFILE%\.agents\skills`,
 `%USERPROFILE%\.cursor\skills`; для DSH учитывать `DSH_HOME`, для OpenCode — активную
 XDG-конфигурацию. Модель DeepSeek в OpenCode **не равна** DeepSeek Harness.
-
----
-
-## 11. Подтверждение совместимости и клиентских испытаний
-
-Уровни доказательств (из `references/runtime-evidence.md`):
-`DOCUMENTED → CLI_PRESENT → LOCAL_STATIC_PASS → CLIENT_REVIEW_REQUIRED → CLIENT_PASS`.
-
-- `CLIENT_PASS` **не** присваивается по коду выхода 0, тексту модели, факту наличия
-  файла, одному SHA-256 или синтетическому self-test.
-- Невыполненные испытания — `NOT_TESTED`; только чтение без подтверждения —
-  `BLOCKED_READ_ONLY_UNVERIFIED`; повреждённые журналы — `INVALID_EVIDENCE`.
-- Обычный аудит **не запускает** AI-клиенты и `integration/runtime/cli_e2e.py`
-  (такие скрипты существуют только в полном архиве, не в установленном Skill).
 
 ---
 
@@ -439,6 +449,7 @@ XDG-конфигурацию. Модель DeepSeek в OpenCode **не равн�
 `evidence[]`, `output_files[]`, `invocations[]`, `data{}`, `limitations[]`.
 
 **`data` по этапам:**
+
 - `PREFLIGHT` → `host_profile` (объект, ≥1 поле);
 - `AUDIT` → `checked_files[]`, `findings[]` (каждый: `id`, `severity`, `file`, `evidence`, опц. `confidence`);
 - `IMPROVE` → `proposals[]` (`id`, `priority` (P0–P3), `what`, `why`, `how`);
@@ -451,5 +462,5 @@ XDG-конфигурацию. Модель DeepSeek в OpenCode **не равн�
 
 ---
 
-*См. также:* [SKILLS-REFERENCE-AI-SCRIPTS.md](SKILLS-REFERENCE-AI-SCRIPTS.md) —
+_См. также:_ [SKILLS-REFERENCE-AI-SCRIPTS.md](SKILLS-REFERENCE-AI-SCRIPTS.md) —
 пофункциональный разбор Python-скриптов, CLI, констант и полных JSON-схем.

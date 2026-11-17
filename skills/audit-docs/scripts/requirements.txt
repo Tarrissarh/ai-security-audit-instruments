@@ -1,2 +1,3 @@
 # Optional: required only to use safe_writer.py, NOT by Skills themselves.
-markdown-it-py>=3.0,<5
+# Версия зафиксирована для воспроизводимости. При обновлении проверь safe_writer.py.
+markdown-it-py==3.0.0

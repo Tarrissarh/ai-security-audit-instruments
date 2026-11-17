@@ -51,6 +51,7 @@
             "mcp",
             "lsp",
             "hooks",
+            "rules",
             "auto"
           ]
         },

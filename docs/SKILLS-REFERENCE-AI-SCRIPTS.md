@@ -9,15 +9,16 @@
 
 ## 0. Карта скриптов
 
-| Скрипт | Расположение | Назначение | Зависимости |
-| ------ | ------------ | ---------- | ----------- |
-| `workflow_state.py` | `audit-workflow/scripts/` | менеджер состояния аудита (checkpoint) | `jsonschema`, `markdown-it-py` |
-| `markdown_links.py` | `audit-workflow/scripts/` | проверка Markdown-ссылок (копия) | `markdown-it-py` |
-| `safe_writer.py` | `audit-docs/scripts/` | безопасная публикация отчётов | `markdown-it-py` (+ `portable_names`, `markdown_links`) |
-| `portable_names.py` | `audit-docs/scripts/` | проверка переносимости имён файлов | нет |
-| `markdown_links.py` | `audit-docs/scripts/` | проверка Markdown-ссылок | `markdown-it-py` |
+| Скрипт              | Расположение              | Назначение                             | Зависимости                                             |
+| ------------------- | ------------------------- | -------------------------------------- | ------------------------------------------------------- |
+| `workflow_state.py` | `audit-workflow/scripts/` | менеджер состояния аудита (checkpoint) | `jsonschema`, `markdown-it-py`                          |
+| `markdown_links.py` | `audit-workflow/scripts/` | проверка Markdown-ссылок (копия)       | `markdown-it-py`                                        |
+| `safe_writer.py`    | `audit-docs/scripts/`     | безопасная публикация отчётов          | `markdown-it-py` (+ `portable_names`, `markdown_links`) |
+| `portable_names.py` | `audit-docs/scripts/`     | проверка переносимости имён файлов     | нет                                                     |
+| `markdown_links.py` | `audit-docs/scripts/`     | проверка Markdown-ссылок               | `markdown-it-py`                                        |
 
 `requirements.txt`:
+
 - `audit-workflow/scripts/requirements.txt`: `jsonschema>=4.20,<5`, `markdown-it-py>=3.0,<5`.
 - `audit-docs/scripts/requirements.txt`: `markdown-it-py>=3.0,<5` (опционально, только для `safe_writer.py`).
 
@@ -43,45 +44,45 @@ python workflow_state.py finalize  --report-dir <path>
 
 ### 1.2 Константы
 
-| Константа | Значение |
-| --------- | -------- |
-| `STAGES` | `('PREFLIGHT','AUDIT','IMPROVE','MODERNIZE','DOCS','VALIDATE')` |
-| `MANDATORY` | `{'PREFLIGHT','AUDIT','DOCS','VALIDATE'}` |
-| `RETRYABLE` | `{'FAILED','BLOCKED','PARTIAL'}` |
-| `MAX_ATTEMPTS` | `2` |
-| `MAX_PAYLOAD_BYTES` | `2 * 1024 * 1024` (2 МиБ) |
-| `MAX_SOURCE_FILES` | `10_000` |
-| `MAX_SOURCE_BYTES` | `256 * 1024 * 1024` (256 МиБ) |
-| `EXCLUDED_DIRS` | `{'.git','node_modules','.venv','venv','__pycache__','.pytest_cache'}` |
+| Константа           | Значение                                                               |
+| ------------------- | ---------------------------------------------------------------------- |
+| `STAGES`            | `('PREFLIGHT','AUDIT','IMPROVE','MODERNIZE','DOCS','VALIDATE')`        |
+| `MANDATORY`         | `{'PREFLIGHT','AUDIT','DOCS','VALIDATE'}`                              |
+| `RETRYABLE`         | `{'FAILED','BLOCKED','PARTIAL'}`                                       |
+| `MAX_ATTEMPTS`      | `2`                                                                    |
+| `MAX_PAYLOAD_BYTES` | `2 * 1024 * 1024` (2 МиБ)                                              |
+| `MAX_SOURCE_FILES`  | `10_000`                                                               |
+| `MAX_SOURCE_BYTES`  | `256 * 1024 * 1024` (256 МиБ)                                          |
+| `EXCLUDED_DIRS`     | `{'.git','node_modules','.venv','venv','__pycache__','.pytest_cache'}` |
 
 ### 1.3 Функции
 
-| Функция | Назначение |
-| ------- | ---------- |
-| `now()` | UTC-время ISO8601 (секунды) |
-| `digest(raw)` | SHA-256 hex |
-| `safe_path(path)` | отказ от symlink в компонентах пути |
-| `ensure_under(root, item)` | запрет выхода пути за каталог аудита |
-| `schema(name)` | загрузка JSON-схемы из `schemas/` |
-| `validate_schema(data, name)` | валидация по `Draft202012Validator` + `FormatChecker`, точная локализация ошибки |
-| `source_fingerprint(target, report_dir)` | SHA-256 снимка исходников (пути + содержимое), отказ от symlink, лимиты размера/числа файлов |
-| `atomic_json(path, value)` | запись через temp-файл + `os.replace`, `fsync`, права `0600` |
-| `load_manifest(report)` | загрузка + валидация `state/manifest.json` |
-| `exclusive_lock(report)` | создание `.workflow.lock` (`O_EXCL`), единственный писатель |
-| `verify_source(manifest)` | `STALE_INPUT`, если SHA-256 цели изменился |
-| `init(target, type, report)` | создание нового запуска, `run_id`, манифест |
-| `read_artifact(report, value, expected_sha)` | чтение артефакта этапа с проверкой пути и SHA-256 |
-| `stage_outputs(report, file_names, require_readme)` | проверка существования/непустоты выходных Markdown и их путей |
-| `verify_report(report, docs_files, expected)` | проверка документов + SHA-256 + Markdown-ссылок |
-| `edges_for(manifest, report, pending)` | построение графа вызовов (caller→callee) |
-| `verify_invocations(manifest, report, pending)` | запрет циклов/рекурсии/дублей/`ai-tool-generator` |
-| `prior_ready(manifest, stage)` | запрет запуска этапа до готовности предыдущих |
-| `check_payload(manifest, report, obj)` | сверка JSON с запуском, контрактом и переходами |
-| `record(report, payload)` | фиксация результата этапа (артефакт → манифест) |
-| `next_stage(manifest)` | первый незавершённый этап |
-| `resume(report)` | проверка исходников/артефактов, возврат следующего этапа |
-| `finalize(report)` | итоговый статус после проверки обязательных этапов и документов |
-| `main(argv)` | разбор CLI и диспетчеризация |
+| Функция                                             | Назначение                                                                                   |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `now()`                                             | UTC-время ISO8601 (секунды)                                                                  |
+| `digest(raw)`                                       | SHA-256 hex                                                                                  |
+| `safe_path(path)`                                   | отказ от symlink в компонентах пути                                                          |
+| `ensure_under(root, item)`                          | запрет выхода пути за каталог аудита                                                         |
+| `schema(name)`                                      | загрузка JSON-схемы из `schemas/`                                                            |
+| `validate_schema(data, name)`                       | валидация по `Draft202012Validator` + `FormatChecker`, точная локализация ошибки             |
+| `source_fingerprint(target, report_dir)`            | SHA-256 снимка исходников (пути + содержимое), отказ от symlink, лимиты размера/числа файлов |
+| `atomic_json(path, value)`                          | запись через temp-файл + `os.replace`, `fsync`, права `0600`                                 |
+| `load_manifest(report)`                             | загрузка + валидация `state/manifest.json`                                                   |
+| `exclusive_lock(report)`                            | создание `.workflow.lock` (`O_EXCL`), единственный писатель                                  |
+| `verify_source(manifest)`                           | `STALE_INPUT`, если SHA-256 цели изменился                                                   |
+| `init(target, type, report)`                        | создание нового запуска, `run_id`, манифест                                                  |
+| `read_artifact(report, value, expected_sha)`        | чтение артефакта этапа с проверкой пути и SHA-256                                            |
+| `stage_outputs(report, file_names, require_readme)` | проверка существования/непустоты выходных Markdown и их путей                                |
+| `verify_report(report, docs_files, expected)`       | проверка документов + SHA-256 + Markdown-ссылок                                              |
+| `edges_for(manifest, report, pending)`              | построение графа вызовов (caller→callee)                                                     |
+| `verify_invocations(manifest, report, pending)`     | запрет циклов/рекурсии/дублей/`ai-tool-generator`                                            |
+| `prior_ready(manifest, stage)`                      | запрет запуска этапа до готовности предыдущих                                                |
+| `check_payload(manifest, report, obj)`              | сверка JSON с запуском, контрактом и переходами                                              |
+| `record(report, payload)`                           | фиксация результата этапа (артефакт → манифест)                                              |
+| `next_stage(manifest)`                              | первый незавершённый этап                                                                    |
+| `resume(report)`                                    | проверка исходников/артефактов, возврат следующего этапа                                     |
+| `finalize(report)`                                  | итоговый статус после проверки обязательных этапов и документов                              |
+| `main(argv)`                                        | разбор CLI и диспетчеризация                                                                 |
 
 ### 1.4 Логика `record` (пошагово)
 
@@ -130,15 +131,15 @@ python safe_writer.py --staging <dir> --output <dir> [--overwrite]
 
 ### 2.2 Функции
 
-| Функция | Назначение |
-| ------- | ---------- |
-| `sha256(data)` | SHA-256 hex |
-| `_assert_no_symlinks(path)` | отказ от symlink/reparse point во всех компонентах |
-| `_within(root, child)` | проверка, что путь остаётся в target-директории |
-| `_collect(staging)` | сбор документов как исходных байтов (UTF-8/BOM/CRLF), проверка типов путей, пустых файлов, коллизий имён и Markdown-ссылок |
-| `_atomic_replace(destination, data, old_mode)` | запись в temp + fsync + `os.replace` |
-| `publish(staging, output, overwrite)` | полный цикл публикации с валидацией, резервным копированием и откатом |
-| `main()` | CLI |
+| Функция                                        | Назначение                                                                                                                 |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `sha256(data)`                                 | SHA-256 hex                                                                                                                |
+| `_assert_no_symlinks(path)`                    | отказ от symlink/reparse point во всех компонентах                                                                         |
+| `_within(root, child)`                         | проверка, что путь остаётся в target-директории                                                                            |
+| `_collect(staging)`                            | сбор документов как исходных байтов (UTF-8/BOM/CRLF), проверка типов путей, пустых файлов, коллизий имён и Markdown-ссылок |
+| `_atomic_replace(destination, data, old_mode)` | запись в temp + fsync + `os.replace`                                                                                       |
+| `publish(staging, output, overwrite)`          | полный цикл публикации с валидацией, резервным копированием и откатом                                                      |
+| `main()`                                       | CLI                                                                                                                        |
 
 ### 2.3 Допустимые пути в staging (строго)
 
@@ -170,6 +171,7 @@ python safe_writer.py --staging <dir> --output <dir> [--overwrite]
   "legacy_deleted": false
 }
 ```
+
 При ошибке: `{"status":"FAILED","error":"..."}` и код 1.
 
 ### 2.6 Явные не-гарантии
@@ -192,13 +194,13 @@ python safe_writer.py --staging <dir> --output <dir> [--overwrite]
 
 ### 3.2 Функции
 
-| Функция | Назначение |
-| ------- | ---------- |
-| `validate_component(name)` | отказ от `""`, `"."`, `".."`; завершающих пробелов/точек; запрещённых символов и управляющих (`< 32`); reserved device names (с учётом суперскриптов ¹²³ и отбрасывания расширения); длины > 255 UTF-16 единиц |
-| `portable_key(relative_path)` | case-insensitive NFC-ключ; валидация каждой компоненты |
-| `find_collisions(paths)` | поиск несовместимых имён и Windows-алиасов (различие только регистром/нормализацией) |
-| `assert_no_existing_aliases(root, relative_paths)` | отказ от существующих записей, отличающихся регистром/нормализацией |
-| `is_link_or_reparse_point(path)` | детект symlink и NTFS reparse point (junctions) через `FILE_ATTRIBUTE_REPARSE_POINT` (0x400) |
+| Функция                                            | Назначение                                                                                                                                                                                                     |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `validate_component(name)`                         | отказ от `""`, `"."`, `".."`; завершающих пробелов/точек; запрещённых символов и управляющих (`< 32`); reserved device names (с учётом суперскриптов ¹²³ и отбрасывания расширения); длины > 255 UTF-16 единиц |
+| `portable_key(relative_path)`                      | case-insensitive NFC-ключ; валидация каждой компоненты                                                                                                                                                         |
+| `find_collisions(paths)`                           | поиск несовместимых имён и Windows-алиасов (различие только регистром/нормализацией)                                                                                                                           |
+| `assert_no_existing_aliases(root, relative_paths)` | отказ от существующих записей, отличающихся регистром/нормализацией                                                                                                                                            |
+| `is_link_or_reparse_point(path)`                   | детект symlink и NTFS reparse point (junctions) через `FILE_ATTRIBUTE_REPARSE_POINT` (0x400)                                                                                                                   |
 
 ---
 
@@ -216,10 +218,10 @@ def check_markdown_links(root: Path, paths: list[Path] | None = None) -> tuple[l
 
 ### 4.2 Внутренние функции
 
-| Функция | Назначение |
-| ------- | ---------- |
+| Функция           | Назначение                                                                                         |
+| ----------------- | -------------------------------------------------------------------------------------------------- |
 | `_headings(path)` | список якорей заголовков (GitHub-style slug + суффиксы `-1`, `-2` для повторов) + HTML `id`/`name` |
-| `_links(path)` | извлечение `href`/`src` из inline-токенов (link, image) с номером строки |
+| `_links(path)`    | извлечение `href`/`src` из inline-токенов (link, image) с номером строки                           |
 
 ### 4.3 Логика проверки ссылки
 
@@ -262,13 +264,13 @@ def check_markdown_links(root: Path, paths: list[Path] | None = None) -> tuple[l
 
 Условная структура `data` (через `allOf`/`if-then`):
 
-| stage | required в `data` | детали |
-| ----- | ----------------- | ------ |
-| PREFLIGHT | `host_profile` | объект, `minProperties: 1` |
-| AUDIT | `checked_files`, `findings` | `checked_files`: массив уникальных строк; `findings[]`: `{id, severity (CRITICAL/HIGH/MEDIUM/LOW/INFO), file, evidence, confidence? (VERIFIED/DOCUMENTED/INFERRED/UNVERIFIED/NOT TESTED/NOT APPLICABLE)}` |
-| IMPROVE | `proposals` | `proposals[]`: `{id, priority (P0/P1/P2/P3), what, why, how}` |
-| MODERNIZE | `proposals` | `proposals[]`: `{id, verification_status (VERIFIED/.../NOT APPLICABLE), recommendation, source_url?, checked_at?}` |
-| VALIDATE | `checks` | `checks[]`: `{name, status (PASSED/FAILED/NOT_TESTED)}` |
+| stage     | required в `data`           | детали                                                                                                                                                                                                    |
+| --------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PREFLIGHT | `host_profile`              | объект, `minProperties: 1`                                                                                                                                                                                |
+| AUDIT     | `checked_files`, `findings` | `checked_files`: массив уникальных строк; `findings[]`: `{id, severity (CRITICAL/HIGH/MEDIUM/LOW/INFO), file, evidence, confidence? (VERIFIED/DOCUMENTED/INFERRED/UNVERIFIED/NOT TESTED/NOT APPLICABLE)}` |
+| IMPROVE   | `proposals`                 | `proposals[]`: `{id, priority (P0/P1/P2/P3), what, why, how}`                                                                                                                                             |
+| MODERNIZE | `proposals`                 | `proposals[]`: `{id, verification_status (VERIFIED/.../NOT APPLICABLE), recommendation, source_url?, checked_at?}`                                                                                        |
+| VALIDATE  | `checks`                    | `checks[]`: `{name, status (PASSED/FAILED/NOT_TESTED)}`                                                                                                                                                   |
 
 ### 5.3 Пример (`examples/AUDIT.example.json`)
 
@@ -302,6 +304,7 @@ def check_markdown_links(root: Path, paths: list[Path] | None = None) -> tuple[l
 
 ---
 
-*Связанные документы:*
+_Связанные документы:_
+
 - [SKILLS-REFERENCE-AI.md](SKILLS-REFERENCE-AI.md) — основной справочник для ИИ.
 - [SKILLS-GUIDE-RU.md](SKILLS-GUIDE-RU.md) — гайд для человека.
