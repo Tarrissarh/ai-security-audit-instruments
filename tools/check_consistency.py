@@ -11,7 +11,9 @@
      в каждом SKILL.md разрешаются в существующий файл. Кросс-скилловые ссылки
      (первый сегмент — имя скилла) пропускаются: это не относительные пути.
   4. (флаг --check-profile-boilerplate) 7 профильных аудиторов содержат общий набор
-     разделов H2 — ловит структурный дрейф между ними.
+     разделов H2, а инвариантные секции (безопасный режим, передаваемый результат,
+     JSON-контракт, создание документации) совпадают дословно — ловит структурный
+     и текстовый дрейф между ними.
 
 Код выхода: 0 — всё в порядке, 1 — есть ошибки.
 """
@@ -49,6 +51,15 @@ COMMON_PROFILE_HEADINGS = {
     '## Передаваемый результат и критерии оценки',
     '## Особое требование',
     '## JSON-контракт при запуске через audit-workflow',
+}
+# Секции, которые обязаны быть дословно одинаковыми у всех профильных аудиторов
+# (не содержат тип-специфичного текста). Тип-специфичные («Профильные проверки …»,
+# «Особое требование», отдельные пункты «Общего процесса») сюда не входят.
+INVARIANT_SECTIONS = {
+    'Обязательный безопасный режим',
+    'Обязательное создание документации после аудита',
+    'Передаваемый результат и критерии оценки',
+    'JSON-контракт при запуске через audit-workflow',
 }
 
 
@@ -187,15 +198,37 @@ def headings(text: str) -> set[str]:
     return {line.strip() for line in text.splitlines() if line.startswith('## ')}
 
 
+def section_body(text: str, title: str) -> str | None:
+    """Возвращает тело раздела H2 по заголовку (без строки заголовка)."""
+    for part in re.split(r'^## ', text, flags=re.M)[1:]:
+        if part.splitlines()[0].strip() == title:
+            return '\n'.join(part.splitlines()[1:]).strip()
+    return None
+
+
 def check_profile_boilerplate(errors: list[str]) -> None:
+    bodies: dict[str, str] = {}
     for name in sorted(PROFILE_AUDITORS):
         skill_md = ROOT / 'skills' / name / 'SKILL.md'
         if not skill_md.is_file():
             continue
-        actual = headings(skill_md.read_text(encoding='utf-8'))
+        text = skill_md.read_text(encoding='utf-8')
+        bodies[name] = text
+        actual = headings(text)
         missing = sorted(COMMON_PROFILE_HEADINGS - actual)
         if missing:
             errors.append(f'{name}: отсутствуют общие разделы: {missing}')
+    for section in sorted(INVARIANT_SECTIONS):
+        reference: tuple[str, str] | None = None
+        for name in sorted(bodies):
+            body = section_body(bodies[name], section)
+            if body is None:
+                errors.append(f'{name}: отсутствует инвариантная секция {section!r}')
+                continue
+            if reference is None:
+                reference = (name, body)
+            elif body != reference[1]:
+                errors.append(f'{name}: секция {section!r} дословно расходится с {reference[0]}')
 
 
 def main() -> int:
