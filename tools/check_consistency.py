@@ -14,6 +14,8 @@
      разделов H2, а инвариантные секции (безопасный режим, передаваемый результат,
      JSON-контракт, создание документации) совпадают дословно — ловит структурный
      и текстовый дрейф между ними.
+  5. Состав скиллов в README.md («Состав набора») и в docs/SKILLS-REFERENCE-AI.md
+     («Инвентарь скиллов») совпадает с фактическим набором skills/.
 
 Код выхода: 0 — всё в порядке, 1 — есть ошибки.
 """
@@ -61,6 +63,7 @@ INVARIANT_SECTIONS = {
     'Передаваемый результат и критерии оценки',
     'JSON-контракт при запуске через audit-workflow',
 }
+SKILL_NAME_RE = re.compile(r'`(audit-[a-z]+|ai-tool-generator)`')
 
 
 class CheckError(Exception):
@@ -194,6 +197,30 @@ def check_links(errors: list[str]) -> None:
                 errors.append(f'{skill_dir.name}/SKILL.md: битая локальная ссылка {raw!r}')
 
 
+def skill_names_in_section(text: str, heading: str) -> set[str]:
+    """Извлекает имена скиллов (audit-*/ai-tool-generator) из конкретного раздела H2."""
+    pattern = r'^## ' + re.escape(heading) + r'\b.*?(?=^## |\Z)'
+    m = re.search(pattern, text, flags=re.M | re.S)
+    if not m:
+        raise CheckError(f'раздел {heading!r} не найден')
+    return set(SKILL_NAME_RE.findall(m.group(0)))
+
+
+def check_docs_skills(errors: list[str]) -> None:
+    """Сверяет перечни скиллов в README и AI-справочнике с фактическим набором skills/."""
+    readme = (ROOT / 'README.md').read_text(encoding='utf-8')
+    reference = (ROOT / 'docs/SKILLS-REFERENCE-AI.md').read_text(encoding='utf-8')
+    sources = [
+        ('README.md «Состав набора»', skill_names_in_section(readme, 'Состав набора')),
+        ('docs/SKILLS-REFERENCE-AI.md «Инвентарь скиллов»', skill_names_in_section(reference, '1. Инвентарь скиллов')),
+    ]
+    for label, names in sources:
+        if names != EXPECTED_SKILLS:
+            missing = sorted(EXPECTED_SKILLS - names)
+            extra = sorted(names - EXPECTED_SKILLS)
+            errors.append(f'{label}: не совпадает с skills/ (нет: {missing or "—"}, лишние: {extra or "—"})')
+
+
 def headings(text: str) -> set[str]:
     return {line.strip() for line in text.splitlines() if line.startswith('## ')}
 
@@ -240,6 +267,7 @@ def main() -> int:
     errors: list[str] = []
     check_types(errors)
     check_skills(errors)
+    check_docs_skills(errors)
     check_links(errors)
     if args.check_profile_boilerplate:
         check_profile_boilerplate(errors)

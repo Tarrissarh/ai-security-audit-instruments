@@ -307,14 +307,16 @@ stateDiagram-v2
 ```text
 {AUDIT_OUTPUT_DIR}/
 ├── README.md
+├── findings.json    # машиночитаемые находки (схема findings.schema.json)
+├── report.sarif     # те же находки в SARIF 2.1.0
 ├── docs/            # security.md, recommendations.md, modernization.md, …
 └── translations/    # переводы оригиналов + README.md (индекс)
 ```
 
 ### 5.5 Публикация через `safe_writer.py` (при PERSISTENT)
 
-1. Подготовить `README.md`, `docs/**/*.md`, `translations/**/*.md` во **внешней**
-   staging-папке.
+1. Подготовить `README.md`, `docs/**/*.md`, `translations/**/*.md`, `findings.json`,
+   `report.sarif` во **внешней** staging-папке.
 2. `python <audit-docs>/scripts/safe_writer.py --staging <dir> --output <AUDIT_OUTPUT_DIR>`
    (повторно: `--overwrite` с резервной копией).
 3. Скрипт проверяет структуру и ссылки, но **не** истинность выводов аудита.
@@ -461,6 +463,12 @@ XDG-конфигурацию. Модель DeepSeek в OpenCode **не равн�
 **`manifest`**: `schema_version`, `run_id`, `created_at`, `updated_at`, `target{path,type,sha256}`,
 `report_dir`, `state` (`RUNNING|COMPLETE|PARTIAL|BLOCKED|FAILED`), `stages{...}`,
 `docs_checksums{}`.
+
+**`findings`** (машиночитаемый отчёт, `findings.json`): `schema_version` (`"1.0"`),
+`target{path,type,version?}`, `generated_at`, `verdict`, `coverage?{total_checks,performed}`,
+`findings[]` (каждый: `id`, `severity` (CRITICAL/HIGH/MEDIUM/LOW/INFO), `confidence`,
+`file`, опц. `line`/`evidence`/`impact`/`fix`). SARIF-эквивалент — `report.sarif`
+(через `emit_findings.py`).
 
 ---
 

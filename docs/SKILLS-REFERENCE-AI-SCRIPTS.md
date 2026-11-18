@@ -14,13 +14,14 @@
 | `workflow_state.py` | `audit-workflow/scripts/` | менеджер состояния аудита (checkpoint) | `jsonschema`, `markdown-it-py`                          |
 | `markdown_links.py` | `audit-workflow/scripts/` | проверка Markdown-ссылок (копия)       | `markdown-it-py`                                        |
 | `safe_writer.py`    | `audit-docs/scripts/`     | безопасная публикация отчётов          | `markdown-it-py` (+ `portable_names`, `markdown_links`) |
+| `emit_findings.py`  | `audit-docs/scripts/`     | генератор findings.json + report.sarif | нет                                                     |
 | `portable_names.py` | `audit-docs/scripts/`     | проверка переносимости имён файлов     | нет                                                     |
 | `markdown_links.py` | `audit-docs/scripts/`     | проверка Markdown-ссылок               | `markdown-it-py`                                        |
 
 `requirements.txt`:
 
-- `audit-workflow/scripts/requirements.txt`: `jsonschema>=4.20,<5`, `markdown-it-py>=3.0,<5`.
-- `audit-docs/scripts/requirements.txt`: `markdown-it-py>=3.0,<5` (опционально, только для `safe_writer.py`).
+- `audit-workflow/scripts/requirements.txt`: `jsonschema==4.23.0`, `markdown-it-py==3.0.0`.
+- `audit-docs/scripts/requirements.txt`: `markdown-it-py==3.0.0` (опционально, только для `safe_writer.py`).
 
 ---
 
@@ -116,9 +117,10 @@ into audit-workflow is forbidden`, `cyclic skill invocation graph detected`,
 
 ## 2. `safe_writer.py` — безопасная публикация отчётов
 
-**Назначение:** публикует проверенные Markdown из staging в output с резервными
-копиями и откатом. Не исполняет проверяемый код, не скачивает пакеты, не удаляет
-`RU.md`/`TRANSLATE.md`, не пишет вне явного output-каталога.
+**Назначение:** публикует проверенные Markdown и машиночитаемые находки
+(`findings.json`, `report.sarif`) из staging в output с резервными копиями и откатом.
+Не исполняет проверяемый код, не скачивает пакеты, не удаляет `RU.md`/`TRANSLATE.md`,
+не пишет вне явного output-каталога.
 
 ### 2.1 CLI
 
@@ -126,7 +128,8 @@ into audit-workflow is forbidden`, `cyclic skill invocation graph detected`,
 python safe_writer.py --staging <dir> --output <dir> [--overwrite]
 ```
 
-- Staging обязан содержать `README.md` (+ опц. `docs/**/*.md`, `translations/**/*.md`).
+- Staging обязан содержать `README.md` (+ опц. `docs/**/*.md`, `translations/**/*.md`,
+  `findings.json`, `report.sarif`).
 - `--overwrite` — разрешить замену существующих отчётов с побайтовой резервной копией.
 
 ### 2.2 Функции
@@ -143,8 +146,8 @@ python safe_writer.py --staging <dir> --output <dir> [--overwrite]
 
 ### 2.3 Допустимые пути в staging (строго)
 
-`README.md`, либо `len(parts)>=2` и `parts[0] in ('docs','translations')` и суффикс
-`.md`. Всё остальное — `PublishError`.
+`README.md`, `findings.json`, `report.sarif`, либо `len(parts)>=2` и
+`parts[0] in ('docs','translations')` и суффикс `.md`. Всё остальное — `PublishError`.
 
 ### 2.4 Порядок `publish`
 
@@ -182,17 +185,44 @@ python safe_writer.py --staging <dir> --output <dir> [--overwrite]
 
 ---
 
-## 3. `portable_names.py` — переносимость имён файлов
+## 3. `emit_findings.py` — генератор машиночитаемых находок
+
+**Назначение:** формирует `findings.json` и `report.sarif` из документа находок
+(схема `audit-workflow/schemas/findings.schema.json`). Работает без внешних
+зависимостей; читает вход с `utf-8-sig` (допускает BOM). Не хранит секреты — только
+маскированные доказательства и метаданные.
+
+### 3.1 CLI
+
+```
+python emit_findings.py --input <findings-document.json> --output-dir <dir>
+```
+
+- Выход — JSON на stdout; при ошибке — `{"status":"FAILED","error":...}` и код 1.
+
+### 3.2 Функции
+
+| Функция                   | Назначение                                                   |
+| ------------------------- | ------------------------------------------------------------ |
+| `validate_document(doc)`  | проверка формы документа находок (без внешних зависимостей)  |
+| `to_sarif(doc)`           | преобразование документа находок в SARIF 2.1.0               |
+| `emit(input, output)`     | чтение + валидация + запись `findings.json` и `report.sarif` |
+
+Уровни SARIF: `CRITICAL`/`HIGH` → `error`, `MEDIUM` → `warning`, `LOW`/`INFO` → `note`.
+
+---
+
+## 4. `portable_names.py` — переносимость имён файлов
 
 **Назначение:** preflight переносимости имён (POSIX-валидные, но неоднозначные/невалидные
 на Windows). Не является защитой от враждебных гонок файловой системы.
 
-### 3.1 Константы
+### 4.1 Константы
 
 - `RESERVED_DEVICES` = `{CON, PRN, AUX, NUL} ∪ {COM1..COM9} ∪ {LPT1..LPT9}`.
 - `INVALID_CHARACTERS` = `<>:"/\|?*`.
 
-### 3.2 Функции
+### 4.2 Функции
 
 | Функция                                            | Назначение                                                                                                                                                                                                     |
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -204,26 +234,26 @@ python safe_writer.py --staging <dir> --output <dir> [--overwrite]
 
 ---
 
-## 4. `markdown_links.py` — проверка Markdown-ссылок
+## 5. `markdown_links.py` — проверка Markdown-ссылок
 
 **Назначение:** проверяет локальные ссылки в Markdown через CommonMark-токены
 (`markdown-it-py`), не исполняя содержимое. Идентичный файл лежит в обоих скиллах.
 
-### 4.1 API
+### 5.1 API
 
 ```python
 def check_markdown_links(root: Path, paths: list[Path] | None = None) -> tuple[list[str], list[str]]:
     """возвращает (errors, warnings)"""
 ```
 
-### 4.2 Внутренние функции
+### 5.2 Внутренние функции
 
 | Функция           | Назначение                                                                                         |
 | ----------------- | -------------------------------------------------------------------------------------------------- |
 | `_headings(path)` | список якорей заголовков (GitHub-style slug + суффиксы `-1`, `-2` для повторов) + HTML `id`/`name` |
 | `_links(path)`    | извлечение `href`/`src` из inline-токенов (link, image) с номером строки                           |
 
-### 4.3 Логика проверки ссылки
+### 5.3 Логика проверки ссылки
 
 - `//…` — пропуск; `scheme`/`netloc` (внешние URL) — пропуск (не проверяются локально).
 - путь начинается с `/` — **warning** (site-root link, нельзя проверить локально).
@@ -234,22 +264,22 @@ def check_markdown_links(root: Path, paths: list[Path] | None = None) -> tuple[l
 
 ---
 
-## 5. JSON-схемы
+## 6. JSON-схемы
 
-### 5.1 `manifest.schema.json` (v1.0)
+### 6.1 `manifest.schema.json` (v1.0)
 
 `additionalProperties: false`. Обязательные поля: `schema_version` (`const "1.0"`),
 `run_id` (`^[a-f0-9]{32}$`), `created_at`, `updated_at` (date-time), `target`,
 `report_dir`, `state`, `stages`, `docs_checksums`.
 
-- `target`: `{path: string, type: enum(skill|agent|command|mcp|lsp|hooks|auto), sha256: ^[a-f0-9]{64}$}`.
+- `target`: `{path: string, type: enum(skill|agent|command|mcp|lsp|hooks|rules|auto), sha256: ^[a-f0-9]{64}$}`.
 - `state`: `enum(RUNNING|COMPLETE|PARTIAL|BLOCKED|FAILED)`.
 - `stages`: объект с ключами ровно шести этапов; у каждого `status` (enum
   `PENDING|COMPLETE|PARTIAL|SKIPPED|BLOCKED|FAILED`), `attempts` (int 0–2),
   `artifact` (string|null), `sha256` (null|`^[a-f0-9]{64}$`).
 - `docs_checksums`: объект `{имя: sha256}`.
 
-### 5.2 `stage-result.schema.json` (v1.0)
+### 6.2 `stage-result.schema.json` (v1.0)
 
 Обязательные поля: `schema_version`, `run_id`, `stage`, `status`, `method`,
 `evidence`, `output_files`, `invocations`, `data`, `limitations`.
@@ -272,7 +302,7 @@ def check_markdown_links(root: Path, paths: list[Path] | None = None) -> tuple[l
 | MODERNIZE | `proposals`                 | `proposals[]`: `{id, verification_status (VERIFIED/.../NOT APPLICABLE), recommendation, source_url?, checked_at?}`                                                                                        |
 | VALIDATE  | `checks`                    | `checks[]`: `{name, status (PASSED/FAILED/NOT_TESTED)}`                                                                                                                                                   |
 
-### 5.3 Пример (`examples/AUDIT.example.json`)
+### 6.3 Пример (`examples/AUDIT.example.json`)
 
 ```json
 {
@@ -289,14 +319,27 @@ def check_markdown_links(root: Path, paths: list[Path] | None = None) -> tuple[l
 }
 ```
 
+### 6.4 `findings.schema.json` (v1.0)
+
+`additionalProperties: false`. Обязательные поля: `schema_version` (`const "1.0"`),
+`target` (`{path, type, version?}`), `generated_at` (date-time), `verdict` (string),
+`findings` (массив). Опционально `coverage` (`{total_checks, performed}`).
+
+- `findings[]`: обязательные `{id, severity (CRITICAL/HIGH/MEDIUM/LOW/INFO),
+  confidence (VERIFIED/DOCUMENTED/INFERRED/UNVERIFIED/NOT TESTED/NOT APPLICABLE),
+  file}` и опционально `title, category, line (>=1), evidence, impact, fix`.
+
+Публикуется как `findings.json`; SARIF-эквивалент — `report.sarif` (см. `emit_findings.py`).
+
 ---
 
-## 6. Замечания по корректному использованию
+## 7. Замечания по корректному использованию
 
 - Скрипты проверяют **форму и доступность** файлов, но **не истинность** выводов LLM.
   Запрещено использовать `record` с фиктивными доказательствами ради статуса `COMPLETE`.
 - `workflow_state.py` управляет только `<report-dir>/state/`; `safe_writer.py` публикует
-  только `README.md`, `docs/**/*.md`, `translations/**/*.md`. Области не пересекаются.
+  только `README.md`, `docs/**/*.md`, `translations/**/*.md`, `findings.json`, `report.sarif`.
+  Области не пересекаются.
 - Оба скрипта требуют ручной установки зависимостей из `requirements.txt`
   (автоматической установки нет).
 - `safe_writer.py` никогда не удаляет `RU.md`/`TRANSLATE.md` — их миграция регулируется

@@ -119,6 +119,8 @@ PREFLIGHT → AUDIT → IMPROVE → MODERNIZE → DOCS → VALIDATE → COMPLETE
 
 ```text
 README.md          — краткое резюме: вердикт, главные находки, навигация
+findings.json      — машиночитаемый список находок (для CI-гейтов)
+report.sarif       — те же находки в формате SARIF 2.1.0
 docs/**/*.md       — полные подробности (security, recommendations, modernization…)
 translations/**/*.md — полные русские переводы оригинальных инструкций
 ```
@@ -301,7 +303,8 @@ instruction-файлы.
 - Принимает от профильного аудитора `TARGET_PATH`, `TARGET_TYPE`, `AUDIT_RESULTS`,
   `TRANSLATION_SOURCES` и опционально результаты `audit-improve`/`audit-modernize`.
 - Готовит модульный набор файлов: `README.md` (краткое решение) + `docs/**/*.md`
-  (полные подробности) + `translations/**/*.md` (полные переводы).
+  (полные подробности) + `translations/**/*.md` (полные переводы) +
+  `findings.json`/`report.sarif` (машиночитаемые находки).
 - Соблюдает пороги объёма: до 150 строк — один README; 151–300 — выносит разделы в
   `docs/`; свыше 300 — обязательно разбивает по темам.
 - Переводит исходники по строгим правилам (сохранять структуру, не переводить имена
@@ -371,7 +374,8 @@ REVIEWED →` (отдельное разрешение) `→ INSTALLED/ENABLED`.
 
 ## 5. Python-скрипты простым языком
 
-Всего пять скриптов (два из них — идентичные копии одного файла). Все они — это
+Всего шесть скриптов (один из них — `markdown_links.py` — продублирован в
+`audit-workflow` и `audit-docs`). Все они — это
 **доверенный вспомогательный код самого набора**, а не содержимое проверяемых
 инструментов. Ни один из них не выполняет код аудируемого объекта.
 
@@ -407,9 +411,9 @@ REVIEWED →` (отдельное разрешение) `→ INSTALLED/ENABLED`.
 
 ### 5.2 `audit-docs/scripts/safe_writer.py` — безопасная публикация отчётов
 
-Публикует **проверенные** Markdown-файлы из отдельной staging-папки в целевой
-каталог результата. Поддерживает только три вида файлов: `README.md`,
-`docs/**/*.md`, `translations/**/*.md`.
+Публикует **проверенные** Markdown-файлы и машиночитаемые находки (`findings.json`,
+`report.sarif`) из отдельной staging-папки в целевой каталог результата. Поддерживает:
+`README.md`, `docs/**/*.md`, `translations/**/*.md`, `findings.json`, `report.sarif`.
 
 Что делает при публикации:
 
@@ -457,6 +461,18 @@ REVIEWED →` (отдельное разрешение) `→ INSTALLED/ENABLED`.
 дистрибутива: `workflow_state.py` (в `audit-workflow`) использует свой собственный
 валидатор ссылок, а `safe_writer.py` (в `audit-docs`) — свой.
 
+### 5.6 `audit-docs/scripts/emit_findings.py` — генератор машиночитаемых находок
+
+Превращает структурированный список находок в два файла для CI и GitHub Code
+Scanning:
+
+- `findings.json` — по схеме `audit-workflow/schemas/findings.schema.json`;
+- `report.sarif` — SARIF 2.1.0 (CRITICAL/HIGH → error, MEDIUM → warning,
+  LOW/INFO → note).
+
+Работает без внешних зависимостей и не содержит секретов (только маскированные
+доказательства).
+
 ---
 
 ## 6. Схемы и пример данных
@@ -465,6 +481,8 @@ REVIEWED →` (отдельное разрешение) `→ INSTALLED/ENABLED`.
   (run_id, путь цели, тип, SHA-256, статусы этапов, контрольные суммы документов).
 - **`audit-workflow/schemas/stage-result.schema.json`** — JSON-схема результата одного
   этапа (общие поля + специфичная структура `data` для каждого этапа).
+- **`audit-workflow/schemas/findings.schema.json`** — JSON-схема машиночитаемого
+  документа находок (`target`, `verdict`, `coverage`, `findings[]`).
 - **`audit-workflow/examples/AUDIT.example.json`** — заполненный пример результата
   этапа `AUDIT` для копирования.
 
@@ -519,7 +537,7 @@ flowchart TD
     EVD --> MOD["MODERNIZE<br/>audit-modernize"]
     IMP --> DOCS["DOCS<br/>audit-docs → safe_writer.py"]
     MOD --> DOCS
-    DOCS --> OUT["README.md + docs/ + translations/"]
+    DOCS --> OUT["README.md + docs/ + translations/ + findings.json"]
     OUT --> VAL["VALIDATE<br/>ссылки · SHA-256 · исходники"]
     VAL --> FIN["COMPLETE<br/>workflow_state.py finalize"]
     ST["state/manifest.json<br/>(workflow_state.py)"] -.->|init/record/resume/finalize| WF
@@ -541,7 +559,7 @@ flowchart TD
                                                     ▼
                              DOCS (audit-docs → safe_writer.py)
                                                     │
-                              README.md + docs/ + translations/
+                              README.md + docs/ + translations/ + findings.json
                                                     ▼
                              VALIDATE (ссылки, SHA-256, исходники)
                                                     ▼
@@ -555,7 +573,8 @@ flowchart TD
 - оркестратор → профильный аудитор: `TARGET_PATH`, `TARGET_TYPE`, `TARGET_PLATFORM`;
 - профильный аудитор → оркестратор: находки, доказательства, исходники для перевода;
 - оркестратор → `audit-docs`: собранные результаты + контекст;
-- `audit-docs` → файловая система: `README.md`, `docs/`, `translations/` (через `safe_writer.py`);
+- `audit-docs` → файловая система: `README.md`, `docs/`, `translations/`,
+  `findings.json`, `report.sarif` (через `safe_writer.py`);
 - `workflow_state.py` ↔ `state/manifest.json`: контрольные точки и контрольные суммы.
 
 ---
@@ -569,6 +588,7 @@ flowchart TD
 | `SKILL.md`                                | Основная инструкция оркестрации (9 шагов, протокол этапов, ограничения) |
 | `schemas/manifest.schema.json`            | Схема манифеста запуска (run_id, SHA-256, статусы этапов)               |
 | `schemas/stage-result.schema.json`        | Схема результата одного этапа (общие поля + `data` по этапам)           |
+| `schemas/findings.schema.json`            | Схема документа находок (`findings.json`)                               |
 | `scripts/workflow_state.py`               | Менеджер контрольных точек: `init`/`record`/`resume`/`finalize`         |
 | `scripts/markdown_links.py`               | Валидатор локальных Markdown-ссылок (копия из audit-docs)               |
 | `scripts/requirements.txt`                | `jsonschema`, `markdown-it-py` (для локального валидатора)              |
@@ -601,8 +621,9 @@ flowchart TD
 | Файл                                 | Назначение                                                    |
 | ------------------------------------ | ------------------------------------------------------------- |
 | `SKILL.md`                           | Основная инструкция формирования отчётов и переводов          |
-| `scripts/safe_writer.py`             | Безопасная публикация Markdown с резервными копиями и откатом |
-| `scripts/portable_names.py`          | Проверка переносимости имён файлов (Windows-ограничения)      |
+| `scripts/safe_writer.py`             | Безопасная публикация отчётов с резервными копиями и откатом     |
+| `scripts/emit_findings.py`           | Генератор `findings.json` + `report.sarif`                       |
+| `scripts/portable_names.py`          | Проверка переносимости имён файлов (Windows-ограничения)         |
 | `scripts/markdown_links.py`          | Валидатор локальных Markdown-ссылок                           |
 | `scripts/requirements.txt`           | `markdown-it-py` (только для `safe_writer.py`)                |
 | `scripts/README.md`                  | Инструкция по использованию `safe_writer.py`                  |
@@ -627,6 +648,25 @@ flowchart TD
 | `ai-tool-generator/references/generation-contract.md`    | Контракт результата генерации                            |
 | `ai-tool-generator/references/platform-output-matrix.md` | Генерация для разных хостов                              |
 | `ai-tool-generator/references/tool-types.md`             | Матрица типов AI-инструментов                            |
+
+---
+
+## 11. Инструменты разработки и проверки
+
+Помимо скиллов, в репозитории есть репо-уровневые инструменты контроля качества:
+
+| Путь                         | Назначение                                                                  |
+| ---------------------------- | --------------------------------------------------------------------------- |
+| `tools/check_consistency.py` | Сверка консистентности набора: типы, состав скиллов, ссылки, инвариантные секции |
+| `tests/`                     | Юнит-тесты `workflow_state.py`, `safe_writer.py`, `markdown_links.py`, `emit_findings.py` и JSON-схем |
+| `.github/workflows/ci.yml`   | CI-гейт: чекер консистентности + юнит-тесты на каждый push/PR               |
+
+Запуск локально:
+
+```shell
+python tools/check_consistency.py --check-profile-boilerplate
+python -m unittest discover -s tests
+```
 
 ---
 

@@ -41,6 +41,8 @@ PREFLIGHT → AUDIT → IMPROVE → MODERNIZE → DOCS → VALIDATE → COMPLETE
 
 ```text
 README.md          — краткое резюме, вердикт, навигация
+findings.json      — машиночитаемый список находок (для CI-гейтов)
+report.sarif       — те же находки в SARIF 2.1.0
 docs/**/*.md       — полные подробности (security, recommendations, …)
 translations/**/*.md — русские переводы оригинальных инструкций
 ```

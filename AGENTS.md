@@ -25,7 +25,7 @@ MCP-сервер, LSP-сервер, Hooks, Rules. Скиллы живут в `sk
 ## Структура
 
 - `skills/audit-workflow` — оркестратор полного аудита (единая точка входа).
-- `skills/audit-skill|agent|command|mcp|lsp|hooks` — профильные аудиторы.
+- `skills/audit-skill|agent|command|mcp|lsp|hooks|rules` — профильные аудиторы.
 - `skills/audit-docs` — отчёты и переводы.
 - `skills/audit-improve`, `skills/audit-modernize` — рекомендации.
 - `skills/ai-tool-generator` — генератор (отключён по умолчанию, `disable-model-invocation: true`).
@@ -42,3 +42,5 @@ MCP-сервер, LSP-сервер, Hooks, Rules. Скиллы живут в `sk
 - `ai-tool-generator` никогда не запускается автоматически.
 - Изменения в скиллах — только согласованные; следи, чтобы документация (`docs/`)
   и `README.md` не расходились со `skills/`.
+- После изменений запускай `python tools/check_consistency.py` и
+  `python -m unittest discover -s tests`.
