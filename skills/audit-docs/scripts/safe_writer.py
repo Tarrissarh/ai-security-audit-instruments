@@ -8,8 +8,9 @@ CLI:
   python scripts/safe_writer.py --staging ./prepared-report --output ./target/audit
   python scripts/safe_writer.py --staging ./prepared-report --output ./target/audit --overwrite
 
-The staging directory must contain README.md plus optional docs/**/*.md and
-translations/**/*.md. This script requires markdown-it-py for link validation.
+The staging directory must contain README.md plus optional docs/**/*.md,
+translations/**/*.md, findings.json and report.sarif. This script requires
+markdown-it-py for link validation.
 Use a trusted, exclusively-owned output directory: race-resistant operations
 against a concurrently hostile filesystem are beyond this tool's threat model.
 """
@@ -51,6 +52,12 @@ def _within(root: Path, child: Path) -> bool:
     """Проверяет, что разрешённый путь остаётся в целевой директории даже при вложенных каталогах."""
     return child.resolve(strict = False).is_relative_to(root.resolve(strict = False))
 
+def _is_report_file(rel: Path) -> bool:
+    """Допустимые выходные файлы: README.md, docs/**, translations/**, findings.json, report.sarif."""
+    if rel in (Path('README.md'), Path('findings.json'), Path('report.sarif')):
+        return True
+    return len(rel.parts) >= 2 and rel.parts[0] in ('docs', 'translations') and rel.suffix.lower() == '.md'
+
 def _collect(staging: Path) -> dict[Path, bytes]:
     """Собирает документы из staging как исходные байты, сохраняя UTF-8/BOM и CRLF без неявной нормализации."""
     if not staging.is_dir():
@@ -67,18 +74,17 @@ def _collect(staging: Path) -> dict[Path, bytes]:
             path = folder / filename
             _assert_no_symlinks(path)
             rel = path.relative_to(staging)
-            if not (rel == Path('README.md') or
-                    (len(rel.parts) >= 2 and rel.parts[0] in ('docs', 'translations') and rel.suffix.lower() == '.md')):
-                raise PublishError(f'unexpected staging file (only report Markdown allowed): {rel}')
+            if not _is_report_file(rel):
+                raise PublishError(f'unexpected staging file (only report files allowed): {rel}')
             if not path.is_file():
                 raise PublishError(f'not a regular staging file: {rel}')
             data = path.read_bytes()
             try:
                 text = data.decode('utf-8-sig')
             except UnicodeDecodeError as exc:
-                raise PublishError(f'non-UTF-8 Markdown: {rel}') from exc
+                raise PublishError(f'non-UTF-8 file: {rel}') from exc
             if not text.strip():
-                raise PublishError(f'empty Markdown: {rel}')
+                raise PublishError(f'empty file: {rel}')
             result[rel] = data
     if Path('README.md') not in result:
         raise PublishError('staging must contain README.md')

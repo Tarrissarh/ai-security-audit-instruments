@@ -15,6 +15,8 @@
 ```text
 {AUDIT_OUTPUT_DIR}/
 ├── README.md                       # Резюме, вердикт, проблемы, навигация
+├── findings.json                   # Машиночитаемый список находок (для CI-гейтов)
+├── report.sarif                    # Тот же список в SARIF 2.1.0 (GitHub Code Scanning)
 ├── docs/
 │   ├── README.md                   # Индекс при большом количестве документов
 │   ├── architecture.md
@@ -128,3 +130,19 @@
 Когда `audit-improve`/`audit-modernize` возвращают обоснованные рекомендации, сохраняй их без потерь в `docs/improvements.md`/`docs/modernization.md`; если они отсутствуют, не создавай пустые разделы. Документы должны ссылаться на первичные находки и официальные источники, но не дублировать весь основной отчёт.
 
 Подзаголовок README «Дальнейшие действия» должен различать: готовые предложения, неподтверждённые проверки, и **изменения, требующие отдельной команды человека**.
+
+## 11. Машиночитаемые результаты (findings.json / report.sarif)
+
+В дополнение к Markdown публикуй машиночитаемый список находок, чтобы его могли
+потребить CI-гейты и GitHub Code Scanning:
+
+- `findings.json` — документ по схеме `audit-workflow/schemas/findings.schema.json`
+  (`schema_version`, `target`, `generated_at`, `verdict`, необязательный `coverage` и
+  `findings[]` с `id/severity/confidence/file/line/evidence/impact/fix`).
+- `report.sarif` — те же находки в формате SARIF 2.1.0 (CRITICAL/HIGH → `error`,
+  MEDIUM → `warning`, LOW/INFO → `note`).
+
+Генерация: `python <установленный audit-docs>/scripts/emit_findings.py --input <документ> --output-dir <AUDIT_OUTPUT_DIR>`.
+Публикация — через `safe_writer.py` (эти файлы допустимы в staging наряду с README/docs/translations).
+Не включай в них секреты и полные исходники: только маскированные доказательства и
+метаданные. Отсутствие находок фиксируй пустым `findings: []`, а не пропуском файла.

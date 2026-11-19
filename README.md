@@ -41,6 +41,8 @@ PREFLIGHT → AUDIT → IMPROVE → MODERNIZE → DOCS → VALIDATE → COMPLETE
 
 ```text
 README.md          — краткое резюме, вердикт, навигация
+findings.json      — машиночитаемый список находок (для CI-гейтов)
+report.sarif       — те же находки в SARIF 2.1.0
 docs/**/*.md       — полные подробности (security, recommendations, …)
 translations/**/*.md — русские переводы оригинальных инструкций
 ```
@@ -64,6 +66,110 @@ translations/**/*.md — русские переводы оригинальны�
 Оркестратор сам определит платформу, тип объекта, выполнит профильный анализ,
 подготовит предложения по улучшению и актуализации, создаст документацию и проверит
 результат.
+
+## Варианты использования
+
+### Полный аудит (рекомендуемый путь)
+
+Обратитесь к оркестратору `audit-workflow` — он сам определит платформу и тип объекта,
+выполнит профильный анализ, подготовит рекомендации, документацию и проверит результат:
+
+> «Проведи полный аудит инструмента `<путь или имя>`».
+
+Тип и платформу можно задать явно: `TARGET_TYPE` =
+`auto|skill|agent|command|mcp|lsp|hooks|rules`, `TARGET_PLATFORM` =
+`auto|opencode|deepseek-harness|claude-code|codex|cursor|other`.
+
+### Аудит конкретного типа
+
+Для отдельного типа можно обратиться напрямую к профильному аудитору:
+
+| Тип объекта | Скилл           |
+| ----------- | --------------- |
+| Skill       | `audit-skill`   |
+| Agent       | `audit-agent`   |
+| Command     | `audit-command` |
+| MCP-сервер  | `audit-mcp`     |
+| LSP-сервер  | `audit-lsp`     |
+| Hooks       | `audit-hooks`   |
+| Rules       | `audit-rules`   |
+
+При прямом запуске аудитор сам передаёт результат в `audit-docs`; при запуске через
+оркестратор — возвращает данные ему.
+
+### Режимы работы
+
+- **PERSISTENT** — доступны Python 3.10+, `jsonschema` и `markdown-it-py`, разрешена запись
+  в согласованный каталог. Состояние этапов сохраняется в `<target>/audit/state/manifest.json`
+  и восстанавливается после перерыва.
+- **MANUAL** — Python, зависимости или права записи недоступны. Результаты передаются
+  в контексте, помечается `PERSISTENCE_UNAVAILABLE`; восстановление после перезапуска
+  клиента не гарантируется.
+
+### Локальный менеджер этапов (CLI)
+
+```shell
+python skills/audit-workflow/scripts/workflow_state.py init \
+  --target <объект> --type skill --report-dir <объект>/audit
+python skills/audit-workflow/scripts/workflow_state.py resume --report-dir <объект>/audit
+python skills/audit-workflow/scripts/workflow_state.py finalize --report-dir <объект>/audit
+```
+
+Подробности — в `skills/audit-workflow/scripts/README.md`.
+
+### Генерация отсутствующего инструмента
+
+Если в ходе аудита обнаружен инструмент, которого нет, скилл `ai-tool-generator`
+запускается **только по явной команде человека** (например, «Используй
+`ai-tool-generator` и создай …»). Из конвейера аудита он автоматически не вызывается.
+
+## Проверка результата
+
+### Публикация отчёта
+
+Отчёт публикуется через `audit-docs` скриптом `safe_writer.py` (подготовленные файлы
+лежат во внешней staging-папке):
+
+```shell
+python skills/audit-docs/scripts/safe_writer.py \
+  --staging <staging> --output <target>/audit
+```
+
+Повторная публикация с перезаписью — только с `--overwrite` (создаётся резервная копия).
+
+### Консистентность набора
+
+Сверка, что типы, состав скиллов и ссылки не разошлись:
+
+```shell
+python tools/check_consistency.py                     # базовые проверки
+python tools/check_consistency.py --check-profile-boilerplate   # + структура профильных аудиторов
+```
+
+### Юнит-тесты менеджера состояния
+
+```shell
+python -m unittest discover -s tests -v
+```
+
+Требует `jsonschema`; тесты валидации отчёта дополнительно требуют `markdown-it-py`
+(при отсутствии — автоматически пропускаются).
+
+### Самоаудит набора
+
+Набор проверяет сам себя на двух уровнях:
+
+- **Статический гейт (в CI).** На каждый push/PR автоматически выполняются
+  `tools/check_consistency.py` и юнит-тесты (см. `.github/workflows/ci.yml`).
+- **LLM-самоаудит (по требованию).** Запустите `audit-workflow` на корень репозитория:
+  «Проведи полный аудит инструмента `.`». Критерий приёмки: отчёт `README.md`/`docs/`
+  не расходится со `skills/`, и на самом наборе нет находок `CRITICAL`/`HIGH`.
+
+### Статусы этапа и вердикт
+
+Статусы этапа: `COMPLETE | PARTIAL | SKIPPED | BLOCKED | FAILED` (в манифесте также
+`PENDING`). Итоговый вердикт по объекту: `МОЖНО ИСПОЛЬЗОВАТЬ / МОЖНО С ОГРАНИЧЕНИЯМИ /
+НЕ РЕКОМЕНДУЕТСЯ / НЕЛЬЗЯ РЕКОМЕНДОВАТЬ К ИСПОЛЬЗОВАНИЮ / НЕДОСТАТОЧНО ДАННЫХ`.
 
 ## Безопасность
 

@@ -43,6 +43,7 @@ MAX_PAYLOAD_BYTES = 2 * 1024 * 1024
 MAX_SOURCE_FILES = 10_000
 MAX_SOURCE_BYTES = 256 * 1024 * 1024
 EXCLUDED_DIRS = {'.git', 'node_modules', '.venv', 'venv', '__pycache__', '.pytest_cache'}
+TARGET_TYPES = ('auto', 'skill', 'agent', 'command', 'mcp', 'lsp', 'hooks', 'rules')
 
 class WorkflowError(ValueError):
     """Unsafe input, invalid checkpoint, or invalid state transition."""
@@ -190,7 +191,7 @@ def verify_source(manifest: dict) -> None:
 def init(target: Path, target_type: str, report: Path) -> dict:
     """Создаёт новый запуск аудита с контрольной суммой цели и обязательными этапами без выполнения исследуемого инструмента."""
     target, report = safe_path(target), safe_path(report)
-    if target_type not in ('auto', 'skill', 'agent', 'command', 'mcp', 'lsp', 'hooks'):
+    if target_type not in TARGET_TYPES:
         raise WorkflowError('invalid target type')
     if report.exists() and not report.is_dir():
         raise WorkflowError('report-dir must be a directory')
@@ -448,7 +449,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest = 'command', required = True)
     init_cmd = sub.add_parser('init', help = 'Create a new audit state')
     init_cmd.add_argument('--target', required = True, type = Path)
-    init_cmd.add_argument('--type', required = True, choices = ['auto', 'skill', 'agent', 'command', 'mcp', 'lsp', 'hooks'])
+    init_cmd.add_argument('--type', required = True, choices = list(TARGET_TYPES))
     init_cmd.add_argument('--report-dir', required = True, type = Path)
     for name in ('record', 'resume', 'finalize'):
         p = sub.add_parser(name)
